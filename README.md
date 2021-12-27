@@ -130,6 +130,16 @@ export const Query: QueryResolvers = {
 
 ## Reference
 
-### Filters
+### Field Filters
 
-1. IntFilter - Filter documents by a field that is indexed by an integer.
+Use filters to type `request.body` or GraphQL `input` types, allowing your client to have control over the data it requests. This package provides the following Field Filters:
+
+- IntFilter
+  - Filter by comparing requested integer to the available document fields.
+  - Options: EQ | NE | LT | GT | LTE | GTE
+- StringFilter
+  - Filter by comparing requested string with the available document fields.
+  - Options: MATCH, OBJECTID, REGEX(partial match)
+- BooleanFilter
+  - Filter by comparing requested boolean with available document fields.
+  - Options: EQ | NE
