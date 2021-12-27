@@ -7,9 +7,9 @@ import {
 import Mongoose from 'mongoose';
 import {
   GenerateFieldsArguments,
-  StringFilter,
-  BooleanFilter,
-  IntFilter,
+  StringFieldFilter,
+  BooleanFieldFilter,
+  IntFieldFilter,
   OperatorEnum,
 } from '../../types';
 
@@ -35,14 +35,17 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
   if (isStringFilter(filtering)) {
     switch (filtering.filter) {
       case 'REGEX':
-        const regex = new RegExp(`${(filtering as StringFilter).string}`, 'i');
+        const regex = new RegExp(
+          `${(filtering as StringFieldFilter).string}`,
+          'i'
+        );
         addField(mongoFilter, parsedLocation, { $regex: regex }, operator);
         break;
       case 'MATCH':
         addField(
           mongoFilter,
           parsedLocation,
-          (filtering as StringFilter).string,
+          (filtering as StringFieldFilter).string,
           operator
         );
         break;
@@ -51,7 +54,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
         addField(
           mongoFilter,
           parsedLocation,
-          new Mongoose.Types.ObjectId((filtering as StringFilter).string),
+          new Mongoose.Types.ObjectId((filtering as StringFieldFilter).string),
           operator
         );
         break;
@@ -63,7 +66,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $eq: (filtering as BooleanFilter).bool,
+            $eq: (filtering as BooleanFieldFilter).bool,
           },
           operator
         );
@@ -73,7 +76,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $ne: (filtering as BooleanFilter).bool,
+            $ne: (filtering as BooleanFieldFilter).bool,
           },
           operator
         );
@@ -86,7 +89,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $lt: (filtering as IntFilter).int,
+            $lt: (filtering as IntFieldFilter).int,
           },
           operator
         );
@@ -97,7 +100,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $gt: (filtering as IntFilter).int,
+            $gt: (filtering as IntFieldFilter).int,
           },
           operator
         );
@@ -108,7 +111,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $eq: (filtering as IntFilter)?.int,
+            $eq: (filtering as IntFieldFilter)?.int,
           },
           operator
         );
@@ -119,7 +122,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $lte: (filtering as IntFilter).int,
+            $lte: (filtering as IntFieldFilter).int,
           },
           operator
         );
@@ -130,7 +133,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $gte: (filtering as IntFilter).int,
+            $gte: (filtering as IntFieldFilter).int,
           },
           operator
         );
@@ -141,7 +144,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
           mongoFilter,
           parsedLocation,
           {
-            $ne: (filtering as IntFilter).int,
+            $ne: (filtering as IntFieldFilter).int,
           },
           operator
         );
