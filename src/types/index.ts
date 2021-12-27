@@ -1,9 +1,9 @@
-export type IntFilter = {
-  filter: IntFilterEnum;
+export type IntFieldFilter = {
+  filter: IntFieldFilterOptions;
   int: number;
 };
 
-export enum IntFilterEnum {
+export enum IntFieldFilterOptions {
   Eq = 'EQ',
   Gt = 'GT',
   Gte = 'GTE',
@@ -12,23 +12,23 @@ export enum IntFilterEnum {
   Ne = 'NE',
 }
 
-export type StringFilter = {
-  filter: StringFilterEnum;
+export type StringFieldFilter = {
+  filter: StringFieldFilterOptions;
   string: string;
 };
 
-export enum StringFilterEnum {
+export enum StringFieldFilterOptions {
   Match = 'MATCH',
   Objectid = 'OBJECTID',
   Regex = 'REGEX',
 }
 
-export type BooleanFilter = {
+export type BooleanFieldFilter = {
   bool: boolean;
-  filter: BooleanFilterEnum;
+  filter: BooleanFieldFilterOptions;
 };
 
-export enum BooleanFilterEnum {
+export enum BooleanFieldFilterOptions {
   Eq = 'EQ',
   Ne = 'NE',
 }
@@ -42,13 +42,13 @@ export enum OperatorEnum {
   Or = 'OR',
 }
 
-export type GMFFilterTypes =
-  | IntFilter
-  | IntFilter[]
-  | StringFilter
-  | StringFilter[]
-  | BooleanFilter
-  | BooleanFilter[]
+export type MFGFilters =
+  | IntFieldFilter
+  | IntFieldFilter[]
+  | StringFieldFilter
+  | StringFieldFilter[]
+  | BooleanFieldFilter
+  | BooleanFieldFilter[]
   | undefined;
 
 export interface GenerateMongoFilterArguments<ModelFilters> {
@@ -67,6 +67,6 @@ export interface GenerateFieldsArguments<Arg> {
 
 export interface FieldRule {
   location: String;
-  filter?: GMFFilterTypes;
+  filter?: MFGFilters;
   disabled: Boolean;
 }

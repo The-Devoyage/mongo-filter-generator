@@ -1,14 +1,14 @@
 import { isFilter } from '../validate-filters';
-import { GMFFilterTypes } from '../../types';
+import { MFGFilters } from '../../types';
 
 export const parseFilters = (
   object: any,
   location: string[]
 ): {
-  filtering: GMFFilterTypes;
+  filtering: MFGFilters;
   location: string;
 } => {
-  const deepFilterSearch = (object: any): GMFFilterTypes => {
+  const deepFilterSearch = (object: any): MFGFilters => {
     if (isFilter(object)) {
       return object;
     }

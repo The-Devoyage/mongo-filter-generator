@@ -1,4 +1,8 @@
-import { StringFilter, BooleanFilter, IntFilter } from '../../types';
+import {
+  StringFieldFilter,
+  BooleanFieldFilter,
+  IntFieldFilter,
+} from '../../types';
 
 export const isFilter = (object: any): boolean => {
   if (typeof object === 'object') {
@@ -12,7 +16,7 @@ export const isFilter = (object: any): boolean => {
   }
 };
 
-export const isStringFilter = (object: any): object is StringFilter => {
+export const isStringFilter = (object: any): object is StringFieldFilter => {
   if (typeof object === 'object') {
     return 'string' in object;
   } else {
@@ -20,7 +24,7 @@ export const isStringFilter = (object: any): object is StringFilter => {
   }
 };
 
-export const isBooleanFilter = (object: any): object is BooleanFilter => {
+export const isBooleanFilter = (object: any): object is BooleanFieldFilter => {
   if (typeof object === 'object') {
     return 'bool' in object;
   } else {
@@ -28,7 +32,7 @@ export const isBooleanFilter = (object: any): object is BooleanFilter => {
   }
 };
 
-export const isIntFilter = (object: any): object is IntFilter => {
+export const isIntFilter = (object: any): object is IntFieldFilter => {
   if (typeof object === 'object') {
     return 'int' in object;
   } else {
