@@ -4,52 +4,75 @@ import { GenerateMongoFilterArguments } from '../types';
 export const GenerateMongoFilter = <Args>(
   params: GenerateMongoFilterArguments<Args>
 ) => {
-  const { modelFilters, fieldRules, filterConfig } = params;
+  const { fieldFilters, fieldRules, config } = params;
 
-  let operator = `$${filterConfig?.operator.toLowerCase() ?? 'or'}` as any;
-  let mongoFilter: any = {
-    [operator]: [],
+  let operator = `$${
+    config?.operator ? config?.operator.toLowerCase() : 'or'
+  }` as any;
+
+  let filters: Record<any, any> = {};
+
+  let options: Record<any, any> = {
+    sort: { createdAt: 1 },
+    limit: 4,
   };
 
-  for (const location in modelFilters) {
-    if (Array.isArray(modelFilters[location])) {
-      const filtersArray: any = modelFilters[location];
+  if (config?.pagination) {
+    if (config.pagination.createdAt) {
+      filters['createdAt'] = {
+        [config.pagination.reverse ? '$lte' : '$gte']: config.pagination
+          .createdAt,
+      };
+    }
+    if ('reverse' in config.pagination) {
+      options.sort = {
+        createdAt: config.pagination.reverse ? -1 : 1,
+      };
+    }
+    if ('limit' in config.pagination) {
+      options.limit = config.pagination.limit;
+    }
+  }
 
-      for (const filter of filtersArray) {
+  for (const location in fieldFilters) {
+    if (Array.isArray(fieldFilters[location])) {
+      const fieldFiltersArray: any = fieldFilters[location];
+
+      for (const filter of fieldFiltersArray) {
         generateFields({
-          arg: filter,
+          unparsedFieldFilter: filter,
           location,
-          mongoFilter,
+          filters: filters,
           fieldRules,
           operator,
         });
       }
     } else {
       generateFields({
-        arg: modelFilters[location],
+        unparsedFieldFilter: fieldFilters[location],
         location,
-        mongoFilter,
+        filters: filters,
         operator,
         fieldRules,
       });
     }
   }
 
-  if (!Object.keys(modelFilters).length && fieldRules?.length) {
+  if (fieldRules?.length) {
     for (const fieldRule of fieldRules) {
       generateFields({
-        arg: {},
+        unparsedFieldFilter: fieldRule.fieldFilter,
         location: fieldRule.location.toString(),
-        mongoFilter,
+        filters: filters,
         fieldRules,
         operator,
       });
     }
   }
 
-  if (mongoFilter[operator].length) {
-    return mongoFilter;
+  if (Object.keys(filters).length) {
+    return { filters, options };
   } else {
-    return {};
+    return { filters: {}, options };
   }
 };

@@ -1,48 +1,45 @@
-export type IntFieldFilter = {
-  filter: IntFieldFilterOptions;
-  int: number;
+export type FieldFilterConfig = {
+  includeEmptyResults?: boolean;
 };
 
-export enum IntFieldFilterOptions {
-  Eq = 'EQ',
-  Gt = 'GT',
-  Gte = 'GTE',
-  Lt = 'LT',
-  Lte = 'LTE',
-  Ne = 'NE',
-}
+export type IntFieldFilter = {
+  filterBy: IntFieldFilterOptions;
+  int: number;
+  config?: FieldFilterConfig;
+};
+
+export type IntFieldFilterOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
 
 export type StringFieldFilter = {
-  filter: StringFieldFilterOptions;
+  filterBy: StringFieldFilterOptions;
   string: string;
+  config?: FieldFilterConfig;
 };
 
-export enum StringFieldFilterOptions {
-  Match = 'MATCH',
-  Objectid = 'OBJECTID',
-  Regex = 'REGEX',
-}
+export type StringFieldFilterOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
 
 export type BooleanFieldFilter = {
   bool: boolean;
-  filter: BooleanFieldFilterOptions;
+  filterBy: BooleanFieldFilterOptions;
+  config?: FieldFilterConfig;
 };
 
-export enum BooleanFieldFilterOptions {
-  Eq = 'EQ',
-  Ne = 'NE',
-}
+export type BooleanFieldFilterOptions = 'EQ' | 'NE';
+
+export type Pagination = {
+  limit: number;
+  reverse?: boolean;
+  createdAt?: Date;
+};
 
 export type FilterConfig = {
-  operator: OperatorEnum;
+  operator?: OperatorOptions;
+  pagination?: Pagination;
 };
 
-export enum OperatorEnum {
-  And = 'AND',
-  Or = 'OR',
-}
+export type OperatorOptions = 'AND' | 'OR';
 
-export type MFGFilters =
+export type FieldFilter =
   | IntFieldFilter
   | IntFieldFilter[]
   | StringFieldFilter
@@ -51,22 +48,22 @@ export type MFGFilters =
   | BooleanFieldFilter[]
   | undefined;
 
-export interface GenerateMongoFilterArguments<ModelFilters> {
-  modelFilters: ModelFilters;
-  filterConfig?: FilterConfig | null;
+export interface GenerateMongoFilterArguments<FieldFilters> {
+  fieldFilters: FieldFilters;
+  config?: FilterConfig;
   fieldRules?: FieldRule[];
 }
 
-export interface GenerateFieldsArguments<Arg> {
-  arg: Arg;
+export interface GenerateFieldsArguments<UnparsedFieldFilter> {
+  unparsedFieldFilter: UnparsedFieldFilter;
   location: string;
-  mongoFilter: any;
-  operator: OperatorEnum;
+  filters: Record<any, any>;
+  operator: OperatorOptions;
   fieldRules?: FieldRule[];
 }
 
 export interface FieldRule {
   location: String;
-  filter?: MFGFilters;
-  disabled: Boolean;
+  fieldFilter?: FieldFilter;
+  disabled?: Boolean;
 }

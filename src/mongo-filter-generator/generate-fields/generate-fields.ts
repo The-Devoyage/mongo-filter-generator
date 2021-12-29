@@ -1,4 +1,4 @@
-import { parseFilters } from '../parse-filters';
+import { parseFieldFilters } from '../parse-filters';
 import {
   isStringFilter,
   isIntFilter,
@@ -10,13 +10,22 @@ import {
   StringFieldFilter,
   BooleanFieldFilter,
   IntFieldFilter,
-  OperatorEnum,
+  OperatorOptions,
 } from '../../types';
 
 export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
-  const { operator, arg, location, mongoFilter, fieldRules } = params;
+  const {
+    operator,
+    unparsedFieldFilter,
+    location,
+    filters,
+    fieldRules,
+  } = params;
 
-  let { filtering, location: parsedLocation } = parseFilters(arg, [location]);
+  let {
+    filtering,
+    location: parsedLocation,
+  } = parseFieldFilters(unparsedFieldFilter, [location]);
 
   const fieldRule = fieldRules?.find(
     f => f.location === parsedLocation ?? location
@@ -24,26 +33,26 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
   if (fieldRule) {
     if (fieldRule) {
-      if (fieldRule.disabled && Object.keys(arg).length) {
+      if (fieldRule.disabled && Object.keys(unparsedFieldFilter).length) {
         throw new Error(`MFG ERROR: Access to property "${location}" denied.`);
       }
-      filtering = fieldRule.filter;
+      filtering = fieldRule.fieldFilter;
       parsedLocation = fieldRule.location as Extract<keyof Arg, string>;
     }
   }
 
   if (isStringFilter(filtering)) {
-    switch (filtering.filter) {
+    switch (filtering.filterBy) {
       case 'REGEX':
         const regex = new RegExp(
           `${(filtering as StringFieldFilter).string}`,
           'i'
         );
-        addField(mongoFilter, parsedLocation, { $regex: regex }, operator);
+        addField(filters, parsedLocation, { $regex: regex }, operator);
         break;
       case 'MATCH':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           (filtering as StringFieldFilter).string,
           operator
@@ -52,7 +61,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'OBJECTID':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           new Mongoose.Types.ObjectId((filtering as StringFieldFilter).string),
           operator
@@ -60,10 +69,10 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
         break;
     }
   } else if (isBooleanFilter(filtering)) {
-    switch (filtering.filter) {
+    switch (filtering.filterBy) {
       case 'EQ':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $eq: (filtering as BooleanFieldFilter).bool,
@@ -73,7 +82,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
         break;
       case 'NE':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $ne: (filtering as BooleanFieldFilter).bool,
@@ -83,10 +92,10 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
         break;
     }
   } else if (isIntFilter(filtering)) {
-    switch (filtering.filter) {
+    switch (filtering.filterBy) {
       case 'LT':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $lt: (filtering as IntFieldFilter).int,
@@ -97,7 +106,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'GT':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $gt: (filtering as IntFieldFilter).int,
@@ -108,7 +117,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'EQ':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $eq: (filtering as IntFieldFilter)?.int,
@@ -119,7 +128,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'LTE':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $lte: (filtering as IntFieldFilter).int,
@@ -130,7 +139,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'GTE':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $gte: (filtering as IntFieldFilter).int,
@@ -141,7 +150,7 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
 
       case 'NE':
         addField(
-          mongoFilter,
+          filters,
           parsedLocation,
           {
             $ne: (filtering as IntFieldFilter).int,
@@ -151,14 +160,14 @@ export const generateFields = <Arg>(params: GenerateFieldsArguments<Arg>) => {
         break;
     }
   }
-  return mongoFilter;
+  return filters;
 };
 
 const addField = (
-  mongoFilter: any,
+  filters: any,
   location: string,
   newField: any,
-  operator: OperatorEnum
+  operator: OperatorOptions
 ) => {
-  mongoFilter[operator] = [...mongoFilter[operator], { [location]: newField }];
+  filters[operator] = [...filters[operator], { [location]: newField }];
 };
