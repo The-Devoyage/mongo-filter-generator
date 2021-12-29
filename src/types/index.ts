@@ -1,11 +1,9 @@
-export type FieldFilterConfig = {
-  includeEmptyResults?: boolean;
-};
+export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 
 export type IntFieldFilter = {
   filterBy: IntFieldFilterOptions;
   int: number;
-  config?: FieldFilterConfig;
 };
 
 export type IntFieldFilterOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
@@ -13,7 +11,6 @@ export type IntFieldFilterOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
 export type StringFieldFilter = {
   filterBy: StringFieldFilterOptions;
   string: string;
-  config?: FieldFilterConfig;
 };
 
 export type StringFieldFilterOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
@@ -21,20 +18,19 @@ export type StringFieldFilterOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
 export type BooleanFieldFilter = {
   bool: boolean;
   filterBy: BooleanFieldFilterOptions;
-  config?: FieldFilterConfig;
 };
 
 export type BooleanFieldFilterOptions = 'EQ' | 'NE';
 
 export type Pagination = {
   limit: number;
-  reverse?: boolean;
+  reverse?: boolean | InputMaybe<boolean>;
   createdAt?: Date;
 };
 
 export type FilterConfig = {
-  operator?: OperatorOptions;
-  pagination?: Pagination;
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  pagination?: Pagination | InputMaybe<Pagination>;
 };
 
 export type OperatorOptions = 'AND' | 'OR';
@@ -50,7 +46,7 @@ export type FieldFilter =
 
 export interface GenerateMongoFilterArguments<FieldFilters> {
   fieldFilters: FieldFilters;
-  config?: FilterConfig;
+  config?: FilterConfig | InputMaybe<FilterConfig>;
   fieldRules?: FieldRule[];
 }
 
@@ -67,3 +63,8 @@ export interface FieldRule {
   fieldFilter?: FieldFilter;
   disabled?: Boolean;
 }
+
+export type QueryDetails = {
+  count: Number;
+  totalPages: Number;
+};

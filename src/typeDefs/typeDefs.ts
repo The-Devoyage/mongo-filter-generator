@@ -6,26 +6,19 @@ export const typeDefs = gql`
     pagination: Pagination
   }
 
-  input FieldFilterConfig {
-    includeEmptyResults: Boolean
-  }
-
   input IntFieldFilter {
     int: Int!
     filterBy: IntFieldFilterEnum!
-    config: FieldFilterConfig
   }
 
   input StringFieldFilter {
     string: String!
     filterBy: StringFieldFilterEnum!
-    config: FieldFilterConfig
   }
 
   input BooleanFieldFilter {
     bool: Boolean!
     filterBy: BooleanFieldFilterEnum!
-    config: FieldFilterConfig
   }
 
   enum OperatorFieldConfigEnum {

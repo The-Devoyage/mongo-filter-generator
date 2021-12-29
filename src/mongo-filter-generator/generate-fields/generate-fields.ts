@@ -169,5 +169,9 @@ const addField = (
   newField: any,
   operator: OperatorOptions
 ) => {
-  filters[operator] = [...filters[operator], { [location]: newField }];
+  if (operator in filters) {
+    filters[operator] = [...filters[operator], { [location]: newField }];
+  } else {
+    filters[operator] = [{ [location]: newField }];
+  }
 };
