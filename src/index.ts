@@ -1,3 +1,4 @@
 export * from './mongo-filter-generator';
-export * from './sdl';
+export * from './typeDefs';
 export * from './types';
+export * from './find-with-pagination';
