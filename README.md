@@ -2,17 +2,16 @@
 
 ## Features
 
-This package automatically transforms requests from client applications into
-filters for mongo.
+This package automatically transforms requests from client applications into filters for mongo, allowing you to search for and paginate nested results across Apollo Federated graphql sub-schemas.
 
 - Standardizes filters for requests made from client to api.
-- Less logic in api filters as it is all reusable.
+- Less logic in api filters and reducers.
 - More control over each property of each document.
 - Easy to install, setup, and implement with minimal code.
 
 ## Example Query
 
-After adding the few lines of setup boilerplate code to your API, the client instantly will be able to request filtered documents without hassle.
+After adding the few lines of boilerplate code to your API, the client instantly will be able to request filtered and paginated documents from the server without hassle.
 
 The following query/variable combination returns accounts that:
 
@@ -56,21 +55,23 @@ query GetAccounts($getAccountsInput: GetAccountsInput!) {
 
 ### 1. Import Types
 
-More or less this is for projects which use GraphQL. You will need to add the SDL to your typeDefs. Apollo example:
+You will need to add the `typeDefs` to your schmea. Apollo Federation example:
 
 ```ts
-import { SDL } from '@nickisyourfan/mongo-filter-generator';
+import { typeDefs as MFGTypeDefs } from '@nickisyourfan/mongo-filter-generator'; // Import types from the package.
 import { typeDefs, resolvers } from './graphql';
 
 const schema = buildFederatedSchema([
   { typeDefs, resolvers },
-  { typeDefs: SDL }, // Add the MFG TypeDefs to your schema.
+  { typeDefs: MFGTypeDefs }, // Add types to schema.
 ]);
 ```
 
-### 2. Add Filters To Schema
+### 2. Add Field Filters To Your Custom Schmea
 
-Filters are inputs in graphql or the request body within a REST api. Below, we define the input fields that are to be used as the filters, such as IntFilter or StringFilter.
+Field Filters allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request.
+
+Below, we define the input, `GetAccountsInput`. It contains a few Field Filters. Notice, the definition of the `getAccounts` function can send back a fuller response including `Stats` and the Accounts themselves. The stats will help with pagination details.
 
 ```ts
 import { gql } from 'apollo-server-core';
@@ -98,30 +99,64 @@ export const typeDefs = gql`
     married: BooleanFilter
   }
 
+  type GetAccountsResponse {
+    stats: Stats
+    Account: [Account] # The key is named from the name of the associated Mongoose Model.
+  }
+
   extend type Query {
-    getAccounts(getAccountsInput: GetAccountsInput): [Account!]!
+    getAccounts(getAccountsInput: GetAccountsInput): GetAccountsResponse!
   }
 `;
 ```
 
-### 3. Convert Filter
+### 3. Convert Filter and/or use `FindWithPagination`
 
-Use the `GenerateMongoFilter` function to convert the request body to a mongo filter. The result can then be used as the filter parameter in the document model functions.
+Use the `GenerateMongoFilter` function to convert the request body to a Mongo Filter. The result can then be used as the filter parameter in the document model functions.
 
 ```ts
+// Generate Mongo Filter without Pagination Example
+
 import { GenerateMongoFilter } from '@nickisyourfan/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
     // Convert args to mongo filter.
-    const filter = GenerateMongoFilter({
+    const { filters } = GenerateMongoFilter({
       args: args.getAllUsersInput,
-      // Root of object should match the document model.
     });
 
-    // Use filter to find the requested documents
+    // Use filters to find the requested documents
     const accounts = await Account.find(filter);
+
+    return accounts;
+  },
+};
+```
+
+```ts
+// Generate Mongo Filter WITH Pagination Example
+
+import {
+  GenerateMongoFilter,
+  FindWithPagination,
+} from '@nickisyourfan/mongo-filter-generator';
+import { Account } from 'models';
+
+export const Query: QueryResolvers = {
+  getAccounts: async (_, args) => {
+    // Convert args to mongo filter.
+    const { filters } = GenerateMongoFilter({
+      args: args.getAllUsersInput,
+    });
+
+    // Use filters to find the requested documents
+    const accounts = await FindWithPagination({
+      filters,
+      options,
+      model: Account,
+    });
 
     return accounts;
   },
@@ -132,14 +167,103 @@ export const Query: QueryResolvers = {
 
 ### Field Filters
 
-Use filters to type `request.body` or GraphQL `input` types, allowing your client to have control over the data it requests. This package provides the following Field Filters:
+Use Field Filters to type GraphQL input properties within the schema, allowing the client to have control over the data it is requesting.
 
-- IntFilter
-  - Filter by comparing requested integer to the available document fields.
-  - Options: EQ | NE | LT | GT | LTE | GTE
-- StringFilter
-  - Filter by comparing requested string with the available document fields.
-  - Options: MATCH, OBJECTID, REGEX(partial match)
-- BooleanFilter
-  - Filter by comparing requested boolean with available document fields.
-  - Options: EQ | NE
+IntFieldFilter
+
+```ts
+type IntFieldFilter = {
+  filterBy: 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
+  int: number;
+};
+```
+
+StringFieldFilter
+
+```ts
+type StringFieldFilter = {
+  filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
+  string: string;
+};
+```
+
+BooleanFieldFilter
+
+```ts
+type BooleanFieldFilter = {
+  filterBy: 'EQ' | 'NE';
+  bool: Boolean;
+};
+```
+
+```ts
+import { gql } from 'apollo-server-core';
+
+export const typeDefs = gql`
+  input GetAccountsInput {
+    email: StringFilter
+    role: [IntFilter] // Arrays Accepted
+  }
+
+  extend type Query {
+    getAccounts(getAccountsInput: GetAccountsInput): GetAccountsResponse!
+  }
+`;
+```
+
+### Filter Config
+
+Use the `FilterConfig` type in order to allow the client to have more control over the data it is requesting.
+
+```ts
+export type FilterConfig = {
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  pagination?: Pagination | InputMaybe<Pagination>;
+};
+```
+
+Place it within the input, similar to Field Filters.
+
+```ts
+import { gql } from 'apollo-server-core';
+
+export const typeDefs = gql`
+  input GetAccountsInput {
+    email: StringFilter
+    config: FilterConfig
+  }
+`;
+```
+
+Pass the config to `GenerateMongoFilter` in order to allow clients to manipulate operator and pagination options.
+
+### Stats
+
+The `stats` type can be used as within a response definition in order to return helpful details about the request.
+
+```ts
+export type Stats = {
+  remaining: Number;
+  total: Number;
+  page: Number;
+};
+```
+
+```ts
+import { gql } from 'apollo-server-core';
+
+export const typeDefs = gql`
+  type GetAccountsResponse {
+    stats: Stats
+    Account: [Account]
+  }
+
+  extend type Query {
+    getAccounts(getAccountsInput: GetAccountsInput): GetAccountsResponse!
+  }
+`;
+```
+
+## GenerateMongoFilter
+
+Use `GenerateMongoFilter({...})` to generate usable filters from the Field Filters used from requests.

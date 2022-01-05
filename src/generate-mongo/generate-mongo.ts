@@ -1,26 +1,28 @@
-import { generateFields } from './generate-fields';
-import { GenerateMongoFilterArguments } from '../types';
+import { generateFilter } from './generate-filter';
+import { GenerateMongoArguments } from '../types';
+import { FilterQuery, QueryOptions } from 'mongoose';
 
-export const GenerateMongoFilter = <Args>(
-  params: GenerateMongoFilterArguments<Args>
-) => {
+export const GenerateMongo = <Args>(params: GenerateMongoArguments<Args>) => {
+  // Imports
   const { fieldFilters, fieldRules, config } = params;
 
+  //Define Variables
   let operator = `$${
     config?.operator ? config?.operator.toLowerCase() : 'or'
   }` as any;
 
-  let filters: Record<any, any> = {};
+  let filters: FilterQuery<any> = {};
 
-  let options: Record<any, any> = {
+  let options: QueryOptions = {
     sort: { createdAt: 1 },
     limit: 4,
   };
 
+  // Handle Pagination
   if (config?.pagination) {
     if (config.pagination.createdAt) {
       filters['createdAt'] = {
-        [config.pagination.reverse ? '$lte' : '$gte']: config.pagination
+        [config.pagination.reverse ? '$lt' : '$gt']: config.pagination
           .createdAt,
       };
     }
@@ -30,16 +32,17 @@ export const GenerateMongoFilter = <Args>(
       };
     }
     if ('limit' in config.pagination) {
-      options.limit = config.pagination.limit;
+      options.limit = config.pagination.limit ?? 4;
     }
   }
 
+  // Generate Filters for Arrays of Filters and Single Filters
   for (const location in fieldFilters) {
     if (Array.isArray(fieldFilters[location])) {
       const fieldFiltersArray: any = fieldFilters[location];
 
       for (const filter of fieldFiltersArray) {
-        generateFields({
+        generateFilter({
           unparsedFieldFilter: filter,
           location,
           filters: filters,
@@ -48,7 +51,7 @@ export const GenerateMongoFilter = <Args>(
         });
       }
     } else {
-      generateFields({
+      generateFilter({
         unparsedFieldFilter: fieldFilters[location],
         location,
         filters: filters,
@@ -58,9 +61,10 @@ export const GenerateMongoFilter = <Args>(
     }
   }
 
+  // Handle FieldRules
   if (fieldRules?.length) {
     for (const fieldRule of fieldRules) {
-      generateFields({
+      generateFilter({
         unparsedFieldFilter: fieldRule.fieldFilter,
         location: fieldRule.location.toString(),
         filters: filters,
@@ -70,6 +74,7 @@ export const GenerateMongoFilter = <Args>(
     }
   }
 
+  // Return Filters and Options
   if (Object.keys(filters).length) {
     return { filters, options };
   } else {

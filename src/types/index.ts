@@ -1,39 +1,50 @@
+import { Model, FilterQuery } from 'mongoose';
+
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-
-export type IntFieldFilter = {
-  filterBy: IntFieldFilterOptions;
-  int: number;
+export type Scalars = {
+  ID: string;
+  String: string;
+  Boolean: boolean;
+  Int: number;
+  Float: number;
+  DateTime: any;
 };
-
-export type IntFieldFilterOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
-
-export type StringFieldFilter = {
-  filterBy: StringFieldFilterOptions;
-  string: string;
-};
-
-export type StringFieldFilterOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
-
-export type BooleanFieldFilter = {
-  bool: boolean;
-  filterBy: BooleanFieldFilterOptions;
-};
-
-export type BooleanFieldFilterOptions = 'EQ' | 'NE';
-
-export type Pagination = {
-  limit: number;
-  reverse?: boolean | InputMaybe<boolean>;
-  createdAt?: Date;
-};
-
+// Filter Config
 export type FilterConfig = {
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
   pagination?: Pagination | InputMaybe<Pagination>;
 };
-
 export type OperatorOptions = 'AND' | 'OR';
+
+export type Pagination = {
+  limit?: InputMaybe<number> | number;
+  reverse?: boolean | InputMaybe<boolean>;
+  createdAt?: Scalars['DateTime'];
+};
+
+export interface FieldRule {
+  location: String;
+  fieldFilter?: FieldFilter | ArrayFilter;
+  disabled?: Boolean;
+}
+
+// Filters
+
+export type Filters = FieldFilter | ArrayFilter | undefined;
+
+export interface StringFilterBase {
+  string: string | string[];
+  filterBy: StringFilterByOptions;
+}
+export interface BooleanFilterBase {
+  bool: boolean;
+  filterBy: BooleanFilterByOptions;
+}
+export interface IntFilterBase {
+  int: number;
+  filterBy: IntFilterByOptions;
+}
 
 export type FieldFilter =
   | IntFieldFilter
@@ -41,30 +52,64 @@ export type FieldFilter =
   | StringFieldFilter
   | StringFieldFilter[]
   | BooleanFieldFilter
-  | BooleanFieldFilter[]
-  | undefined;
+  | BooleanFieldFilter[];
 
-export interface GenerateMongoFilterArguments<FieldFilters> {
+export type ArrayFilter = StringArrayFilter | StringArrayFilter[];
+//| IntArrayFilter
+//| BooleanArrayFilter
+//| IntArrayFilter[]
+//| BooleanArrayFilter[];
+
+// Field Filters
+export type IntFieldFilter = IntFilterBase;
+export type StringFieldFilter = StringFilterBase;
+export type BooleanFieldFilter = BooleanFilterBase;
+
+// Array Filters
+export interface StringArrayFilter extends StringFilterBase {
+  arrayOptions: ArrayFilterByOptions;
+}
+//export interface IntArrayFilter extends IntFilterBase {
+//arrayOptions: ArrayFilterByOptions;
+//}
+//export interface BooleanArrayFilter extends BooleanFilterBase {
+//arrayOptions: ArrayFilterByOptions;
+//}
+
+// FilterBy Options
+export type IntFilterByOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
+export type StringFilterByOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
+export type BooleanFilterByOptions = 'EQ' | 'NE';
+export type ArrayFilterByOptions = 'IN' | 'NIN';
+
+// Argument Types
+export interface GenerateMongoArguments<FieldFilters> {
   fieldFilters: FieldFilters;
   config?: FilterConfig | InputMaybe<FilterConfig>;
   fieldRules?: FieldRule[];
 }
 
-export interface GenerateFieldsArguments<UnparsedFieldFilter> {
+export interface GenerateFilterArguments<UnparsedFieldFilter> {
   unparsedFieldFilter: UnparsedFieldFilter;
   location: string;
-  filters: Record<any, any>;
+  filters: FilterQuery<any>;
   operator: OperatorOptions;
   fieldRules?: FieldRule[];
 }
 
-export interface FieldRule {
-  location: String;
-  fieldFilter?: FieldFilter;
-  disabled?: Boolean;
+export interface FindWithPaginationParams<ModelType> {
+  model: Model<ModelType>;
+  filters: Record<any, any>;
+  options: Record<any, any>;
 }
-
-export type QueryDetails = {
-  count: Number;
-  totalPages: Number;
+// Response Typings
+export type Stats = {
+  remaining?: Maybe<Scalars['Int']> | number;
+  total?: Maybe<Scalars['Int']> | number;
+  page?: Maybe<Scalars['Int']> | number;
 };
+
+export interface PaginatedResponse<ModelType> {
+  stats?: Stats;
+  data?: ModelType[];
+}

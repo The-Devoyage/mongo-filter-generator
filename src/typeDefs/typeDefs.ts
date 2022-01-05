@@ -1,37 +1,61 @@
 import { gql } from 'apollo-server-core';
 
 export const typeDefs = gql`
+  # Custom Scalars
+  scalar DateTime
+  scalar ObjectID
+
   input FilterConfig {
     operator: OperatorFieldConfigEnum
     pagination: Pagination
   }
-
-  input IntFieldFilter {
-    int: Int!
-    filterBy: IntFieldFilterEnum!
+  input Pagination {
+    limit: Int
+    reverse: Boolean
+    createdAt: DateTime
   }
-
-  input StringFieldFilter {
-    string: String!
-    filterBy: StringFieldFilterEnum!
-  }
-
-  input BooleanFieldFilter {
-    bool: Boolean!
-    filterBy: BooleanFieldFilterEnum!
-  }
-
   enum OperatorFieldConfigEnum {
     AND
     OR
   }
 
-  enum BooleanFieldFilterEnum {
+  # Field Filters
+  input IntFieldFilter {
+    int: Int!
+    filterBy: IntFilterByEnum!
+  }
+  input StringFieldFilter {
+    string: String!
+    filterBy: StringFilterByEnum!
+  }
+  input BooleanFieldFilter {
+    bool: Boolean!
+    filterBy: BooleanFilterByEnum!
+  }
+
+  # Array Filters
+  input IntArrayFilter {
+    int: Int!
+    filterBy: IntFilterByEnum!
+    arrayOptions: ArrayFilterByEnum!
+  }
+  input StringArrayFilter {
+    string: [String!]!
+    filterBy: StringFilterByEnum!
+    arrayOptions: ArrayFilterByEnum!
+  }
+  input BooleanArrayFilter {
+    bool: Boolean!
+    filterBy: BooleanFilterByEnum!
+    arrayOptions: ArrayFilterByEnum!
+  }
+
+  # FilterBy Options
+  enum BooleanFilterByEnum {
     EQ
     NE
   }
-
-  enum IntFieldFilterEnum {
+  enum IntFilterByEnum {
     EQ
     GT
     LT
@@ -39,21 +63,20 @@ export const typeDefs = gql`
     LTE
     NE
   }
-
-  enum StringFieldFilterEnum {
+  enum StringFilterByEnum {
     REGEX
     MATCH
     OBJECTID
   }
-
-  input Pagination {
-    limit: Int!
-    reverse: Boolean
-    createdAt: Date
+  enum ArrayFilterByEnum {
+    IN
+    NIN
   }
 
-  type QueryDetails {
-    count: Int!
-    totalPages: Int!
+  # Response Typings
+  type Stats {
+    remaining: Int
+    total: Int
+    page: Int
   }
 `;
