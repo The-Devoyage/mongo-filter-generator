@@ -1,7 +1,7 @@
 import {
-  StringFieldFilter,
-  BooleanFieldFilter,
-  IntFieldFilter,
+  StringFilterBase,
+  BooleanFilterBase,
+  IntFilterBase,
 } from '../../types';
 
 export const isFilter = (object: any): boolean => {
@@ -11,12 +11,12 @@ export const isFilter = (object: any): boolean => {
     return objectIsFilter;
   } else {
     throw new Error(
-      'MFG ERROR: No Filters Found, you must provide at least one valid filter within each property(Nested properties are valid).'
+      'Mongo Generator Error: No Filters Found, you must provide at least one valid filter within each property(Nested properties are valid).'
     );
   }
 };
 
-export const isStringFilter = (object: any): object is StringFieldFilter => {
+export const isStringFilter = (object: any): object is StringFilterBase => {
   if (typeof object === 'object') {
     return 'string' in object;
   } else {
@@ -24,7 +24,7 @@ export const isStringFilter = (object: any): object is StringFieldFilter => {
   }
 };
 
-export const isBooleanFilter = (object: any): object is BooleanFieldFilter => {
+export const isBooleanFilter = (object: any): object is BooleanFilterBase => {
   if (typeof object === 'object') {
     return 'bool' in object;
   } else {
@@ -32,7 +32,7 @@ export const isBooleanFilter = (object: any): object is BooleanFieldFilter => {
   }
 };
 
-export const isIntFilter = (object: any): object is IntFieldFilter => {
+export const isIntFilter = (object: any): object is IntFilterBase => {
   if (typeof object === 'object') {
     return 'int' in object;
   } else {
