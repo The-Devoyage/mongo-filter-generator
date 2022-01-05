@@ -68,8 +68,6 @@ export async function FindWithPagination<ModelType>(
     },
   ]);
 
-  console.log(documents[0].stats[0]);
-
   const formatted: PaginatedResponse<ModelType> = {
     stats: documents[0].stats[0] ? documents[0].stats[0] : [],
     data: documents[0][params.model.modelName],

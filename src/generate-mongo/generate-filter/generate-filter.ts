@@ -86,7 +86,7 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
             if (!isValidID) {
               throw new Error(`Invalid Mongo Object ID: ${str}.`);
             }
-            const _id = new Mongoose.Types.ObjectId(filtering.string as string);
+            const _id = new Mongoose.Types.ObjectId(str);
             search.push(_id);
           }
         } else {
