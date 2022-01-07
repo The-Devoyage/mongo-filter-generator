@@ -3,7 +3,7 @@ import { gql } from 'apollo-server-core';
 export const typeDefs = gql`
   # Custom Scalars
   scalar DateTime
-  scalar ObjectId
+  scalar ObjectID
 
   input FilterConfig {
     operator: OperatorFieldConfigEnum
