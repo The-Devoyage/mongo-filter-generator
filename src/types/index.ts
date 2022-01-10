@@ -98,7 +98,7 @@ export interface FindWithPaginationParams<ModelType> {
   options: Record<any, any>;
 }
 
-export interface FindWithPaginationModel extends Model<any> {
+export interface FindAndPaginateModel extends Model<any> {
   findAndPaginate: <T>(
     filters: FilterQuery<any>,
     options: Record<any, any>
