@@ -9,7 +9,9 @@ export type Scalars = {
   Int: number;
   Float: number;
   DateTime: any;
+  ObjectID: any;
 };
+
 // Filter Config
 export type FilterConfig = {
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
@@ -30,7 +32,6 @@ export interface FieldRule {
 }
 
 // Filters
-
 export type Filters = FieldFilter | ArrayFilter | undefined;
 
 export interface StringFilterBase {
@@ -69,12 +70,6 @@ export type BooleanFieldFilter = BooleanFilterBase;
 export interface StringArrayFilter extends StringFilterBase {
   arrayOptions: ArrayFilterByOptions;
 }
-//export interface IntArrayFilter extends IntFilterBase {
-//arrayOptions: ArrayFilterByOptions;
-//}
-//export interface BooleanArrayFilter extends BooleanFilterBase {
-//arrayOptions: ArrayFilterByOptions;
-//}
 
 // FilterBy Options
 export type IntFilterByOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
@@ -82,7 +77,7 @@ export type StringFilterByOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
 export type BooleanFilterByOptions = 'EQ' | 'NE';
 export type ArrayFilterByOptions = 'IN' | 'NIN';
 
-// Argument Types
+// Arguments
 export interface GenerateMongoArguments<FieldFilters> {
   fieldFilters: FieldFilters;
   config?: FilterConfig | InputMaybe<FilterConfig>;
@@ -102,7 +97,15 @@ export interface FindWithPaginationParams<ModelType> {
   filters: Record<any, any>;
   options: Record<any, any>;
 }
-// Response Typings
+
+export interface FindWithPaginationModel extends Model<any> {
+  findAndPaginate: <T>(
+    filters: FilterQuery<any>,
+    options: Record<any, any>
+  ) => Promise<PaginatedResponse<T>>;
+}
+
+// Response
 export type Stats = {
   remaining?: Maybe<Scalars['Int']> | number;
   total?: Maybe<Scalars['Int']> | number;

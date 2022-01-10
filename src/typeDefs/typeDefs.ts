@@ -5,6 +5,7 @@ export const typeDefs = gql`
   scalar DateTime
   scalar ObjectID
 
+  # Filter Config
   input FilterConfig {
     operator: OperatorFieldConfigEnum
     pagination: Pagination

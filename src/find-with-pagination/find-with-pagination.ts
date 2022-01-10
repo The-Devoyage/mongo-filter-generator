@@ -1,6 +1,21 @@
 import { PaginatedResponse, FindWithPaginationParams } from '../types';
+import { Schema, FilterQuery } from 'mongoose';
 
-export async function FindWithPagination<ModelType>(
+export function findAndPaginatePlugin(schema: Schema) {
+  schema.statics.findAndPaginate = async function(
+    filters: FilterQuery<any>,
+    options: Record<any, any>
+  ) {
+    const paginatedResponse = await FindAndPaginate({
+      filters,
+      options,
+      model: this,
+    });
+    return paginatedResponse;
+  };
+}
+
+export async function FindAndPaginate<ModelType>(
   params: FindWithPaginationParams<ModelType>
 ) {
   const totalCountFilters = { ...params.filters };
