@@ -56,10 +56,6 @@ export type FieldFilter =
   | BooleanFieldFilter[];
 
 export type ArrayFilter = StringArrayFilter | StringArrayFilter[];
-//| IntArrayFilter
-//| BooleanArrayFilter
-//| IntArrayFilter[]
-//| BooleanArrayFilter[];
 
 // Field Filters
 export type IntFieldFilter = IntFilterBase;
