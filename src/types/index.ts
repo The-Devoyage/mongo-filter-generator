@@ -106,6 +106,7 @@ export type Stats = {
   remaining?: Maybe<Scalars['Int']> | number;
   total?: Maybe<Scalars['Int']> | number;
   page?: Maybe<Scalars['Int']> | number;
+  cursor?: Maybe<Scalars['DateTime']> | Date;
 };
 
 export interface PaginatedResponse<ModelType> {
