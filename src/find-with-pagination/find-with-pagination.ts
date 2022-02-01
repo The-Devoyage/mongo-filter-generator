@@ -83,10 +83,18 @@ export async function FindAndPaginate<ModelType>(
     },
   ]);
 
+  if (documents[0].stats[0] && documents[0][params.model.modelName]) {
+    const data = documents[0][params.model.modelName];
+    const cursor = data[data.length - 1]?.createdAt;
+    documents[0].stats[0].cursor = cursor;
+  }
+
   const formatted: PaginatedResponse<ModelType> = {
     stats: documents[0].stats[0] ? documents[0].stats[0] : [],
     data: documents[0][params.model.modelName],
   };
+
+  console.log('formated', formatted);
 
   return formatted;
 }

@@ -79,5 +79,6 @@ export const typeDefs = gql`
     remaining: Int
     total: Int
     page: Int
+    cursor: DateTime
   }
 `;
