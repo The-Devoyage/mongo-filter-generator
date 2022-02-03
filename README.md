@@ -4,7 +4,7 @@ Find, filter, paginate and more with a few lines of code - The Mongo Filter Gene
 
 ## Install
 
-1. [Checkout](https://basetools.io/checkout/vyOL9ATx) to gain instant access to the package in the github npm registry.
+1. [Purchase Access](https://basetools.io/checkout/vyOL9ATx) to gain instant access to the package in the github npm registry.
 
 2. Login to the github registry with your github account.
 
