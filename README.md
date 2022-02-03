@@ -1,6 +1,6 @@
 # Mongo Filter Generator
 
-Find, filter, paginate and more with a few lines of code - The Mongo Filter Generator Package allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
+Find, filter, paginate with a few lines of code - The Mongo Filter Generator Package allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
 
 ## Install
 
@@ -24,7 +24,7 @@ npm login --registry=https://npm.pkg.github.com --scope=@thedevoyage
 npm i @thedevoyage/mongo-filter-generator
 ```
 
-## Hilights
+## Highlights
 
 ### Find and Paginate Method
 
@@ -42,7 +42,7 @@ export interface PaginatedResponse<ModelType> {
 
 ### Generate Mongo
 
-Convert request objects to mongo filters and options. The GMF package will parse nested field or array filters from the request body.
+Convert API requests to mongo filters and options. The GMF package will parse nested field or array filters from the request body.
 
 ```ts
 const { filters, options } = GenerateMongo({
@@ -50,14 +50,16 @@ const { filters, options } = GenerateMongo({
   config: req.body.config,
 });
 
-const paginatedResponse = await User.findAndPaginate<IUser>(filters, options);
+const paginatedResponse = await User.find(filters, options);
 ```
 
 ### Standardized and Typed
 
-The Mongo Filter Generator Package provides `fieldFilters` and `arrayFilters` types that you can use to standardize requests from the client. Typescript and GraphQL types are included.
+The Mongo Filter Generator Package provides `fieldFilters` and `arrayFilters` types that you can use to standardize incoming requests. Both Typescript and GraphQL types are included.
 
-For example, the `GetDogsInput` is typed with the provided filters, allowing the client to have a standardized query input throughout the entire API.
+For example, the `GetDogsInput` is typed with filters provided by the package, allowing the client to have a standardized query input throughout the entire API.
+
+GraphQL Example
 
 ```ts
 //typeDefs.ts
@@ -85,40 +87,78 @@ const typeDefs = gql`
 `;
 ```
 
-## Example GraphQL Queries
-
-The following query/variable combination returns accounts that:
-
-- Have email field that contains the string "nick" **AND** Have role of either equal to 5 or less than 2.
+While with GraphQL it is required to provide the typings to the GraphQL Server, with Typescript, it is not. Typescript users can still define their own types for incoming requests!
 
 ```ts
-// Graphql Query
-query GetAccounts($getAccountsInput: GetAccountsInput!) {
-  getAccounts(getAccountsInput: $getAccountsInput) {
-    _id
-    email
-    role
-    activation {
-      verified
-    }
-  }
+// types.d.ts
+import {
+  StringFieldFilter,
+  StringArrayFilter,
+  IntFieldFilter,
+  FilterConfig,
+} from '@the-devoyage/mongo-filter-generator';
+
+export interface GetDogsRequestBody {
+  _id?: StringFieldFilter;
+  name?: StringArrayFilter;
+  breed?: StringFieldFilter;
+  age?: IntFieldFilter;
+  favoriteFoods?: StringArrayFilter;
+  createdAt?: StringArrayFilter;
+  config?: FilterConfig;
 }
 ```
 
-```json
-// Typed Query Filters
-{
-  "variables": {
-    "getAccountsInput": {
-      "email": { "filterBy": "REGEX", "string": "nick" },
-      "role": [
-        { "filterBy": "EQ", "int": 5 },
-        { "filterBy": "LT", "int": 2 }
-      ]
-      "filterConfig": { "operator": "AND" } }
+## Example Queries
+
+The following query returns accounts that:
+
+- Have email field that contains the string "nick" **AND** Have role of either equal to 5 or less than 2.
+
+GraphQL Example
+
+```js
+const GET_ACCOUNTS = gql`
+  query GetAccounts($getAccountsInput: GetAccountsInput!) {
+    getAccounts(getAccountsInput: $getAccountsInput) {
+      _id
+      email
+      role
+      activation {
+        verified
+      }
     }
   }
-}
+`;
+
+const { data } = useQuery(GET_ACCOUNTS, {
+  variables: {
+    getAccountsInput: {
+      email: { filterBy: 'REGEX', string: 'nick' },
+      role: [
+        { filterBy: 'EQ', int: 5 },
+        { filterBy: 'LT', int: 2 },
+      ],
+      filterConfig: { operator: 'AND' },
+    },
+  },
+});
+```
+
+REST Example
+
+```ts
+const response = await fetch('/api/accounts', {
+  method: 'GET',
+  body: JSON.stringify({
+    email: { filterBy: 'REGEX', string: 'nick' },
+    role: [
+      { filterBy: 'EQ', int: 5 },
+      { filterBy: 'LT', int: 2 },
+    ],
+    filterConfig: { operator: 'AND' },
+  }),
+});
 ```
 
 ## Setup
@@ -127,15 +167,15 @@ query GetAccounts($getAccountsInput: GetAccountsInput!) {
 
 GraphQL:
 
-First, add the MFG `typeDefs` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and Stats within a custom schema. It also provides the `ObjectID` and `DateTime` scalars. Apollo Federation example:
+First, add the MFG `typeDefs` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and Stats within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
 
 ```ts
-import { typeDefs as MFGTypeDefs } from '@thedevoyage/mongo-filter-generator'; // Import types from the package.
+import { typeDefs as MFGTypeDefs } from '@the-devoyage/mongo-filter-generator';
 import { typeDefs, resolvers } from './graphql';
 
 const schema = buildFederatedSchema([
   { typeDefs, resolvers },
-  { typeDefs: MFGTypeDefs }, // Add types to schema.
+  { typeDefs: MFGTypeDefs },
 ]);
 ```
 
@@ -145,16 +185,16 @@ If you are using express, you can optionally create types for each request body.
 
 ### 2. Add Field or Array Filters To Your Custom Schmea
 
-`FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request.
+`FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request. Check the documentation for all provided filters and types that can be used to shape requests.
 
-The graphql schema below defines an "Account" that can be queried by the typed filters provided by the MFG package.
+GraphQL Example
+
+You do not need to change anything other than the inputs, as such:
 
 ```ts
 import { gql } from 'apollo-server-core';
 
 export const typeDefs = gql`
-  scalar ObjectID
-
   type Account {
     _id: ObjectID!
     createdAt: DateTime!
@@ -176,14 +216,14 @@ export const typeDefs = gql`
   input GetAccountsInput {
     _id: StringFieldFilter
     users: StringArrayFilter
-    email: StringFilter
-    role: [IntFilter] # Arrays Accepted
-    nested_details: NestedDetailsInput # Nested Details Accepted
+    email: StringFieldFilter
+    role: [IntFieldFilter] # Arrays Accepted
+    nested_details: NestedDetailsInput
   }
 
   input NestedDetailsInput {
-    age: IntFilter
-    married: BooleanFilter
+    age: IntFieldFilter
+    married: BooleanFieldFilter
   }
 
   type GetAccountsResponse {
@@ -197,11 +237,34 @@ export const typeDefs = gql`
 `;
 ```
 
+Express Example
+
+With express you do not need to tell the server about every single detail. You can simply define a type for incoming request.body and use it within your routes.
+
+```ts
+import {
+  StringFieldFilter,
+  StringArrayFilter,
+  IntFieldFilter,
+  FilterConfig,
+} from '@the-devoyage/mongo-filter-generator';
+
+export interface GetDogsRequestBody {
+  _id?: StringFieldFilter;
+  name?: StringArrayFilter;
+  breed?: StringFieldFilter;
+  age?: IntFieldFilter;
+  favoriteFoods?: StringArrayFilter;
+  createdAt?: StringArrayFilter;
+  config?: FilterConfig;
+}
+```
+
 ### 3. Generate Mongo
 
-Use the `GenerateMongo` function to convert the typed request to a mongo filter. The example below is used within a query resolver. If the API is Restful, this can be done inside the route.
+Use the `GenerateMongo` function to convert the typed request to a mongo filter.
 
-You may use the generated filters with the standard `mongooseDocument.find()` method or with the provided `mongooseDocument.findAndPaginate()` method.
+You may use the generated filters with the standard `mongooseDocument.find()` method or with the provided `mongooseDocument.findAndPaginate()` method (setup required for `findAndPaginate()`).
 
 Graphql Example:
 
@@ -212,42 +275,58 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    // Convert arguments to mongo filters.
-    const { filters } = GenerateMongo({
+    const { filters, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
-    // Use filters to find the requested documents
-    const accounts = await Account.find(filters);
+    const accounts = await Account.find(filters, options);
 
     return accounts;
   },
 };
 ```
 
-REST Example:
+Express JS Example
 
 ```ts
-// Routes.ts
+import {
+  StringFieldFilter,
+  StringArrayFilter,
+  IntFieldFilter,
+  FilterConfig,
+} from '@the-devoyage/mongo-filter-generator';
+
+export interface GetDogsRequestBody {
+  _id?: StringFieldFilter;
+  name?: StringArrayFilter;
+  breed?: StringFieldFilter;
+  age?: IntFieldFilter;
+  favoriteFoods?: StringArrayFilter;
+  createdAt?: StringArrayFilter;
+  config?: FilterConfig;
+}
+
 app.get('/', (req, res) => {
-  // Convert request body to mongo filters.
-  const { filters } = GenerateMongo({
-    fieldFilters: req.body,
+  const request: GetDogsRequestBody = req.body;
+
+  const { filters, options } = GenerateMongo({
+    fieldFilters: request,
+    config: request.config,
   });
 
   // Use filters to find the requested documents
-  const accounts = await Account.find(filters);
+  const dogs = await Dog.find(filters);
 
-  res.json(accounts);
+  res.json(dogs);
 });
 ```
 
 ### 4. Find and Paginate
 
-Use the generated filters and options, from the `GenerateMongo` method, with the provided find and paginate method.
+Use the generated `filters` and `options`, from the `GenerateMongo` method, with the provided find and paginate function.
 
 ```ts
-import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
+import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
@@ -272,7 +351,7 @@ or
 **Note - You must Enable the `findAndPaginate()` method with Mongoose Plugins for the following to execute. Instructions below.**
 
 ```ts
-import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
+import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
@@ -288,29 +367,29 @@ export const Query: QueryResolvers = {
 };
 ```
 
-To apply the `findAndPaginate()` method to models, as the above example, you must apply the mongoose plugin. This may be done within the server file for global plugin, or within the model definition file, for a one time use.
+To apply the `findAndPaginate()` method to models, as the above example, you must apply the provided mongoose plugin. This may be done within the server file for global plugin, or within the model definition file, for a one time use.
 
-\*\* Note - If this is done within the server/entry point, the plugin must be defiend BEFORE routes/resolvers and model imports. Read the Mongoose Global Plugins Documentation for more details.
+Note - If this is done within the server/entry point, the plugin must be defined BEFORE routes/resolvers and model imports. Read the Mongoose Global Plugins Documentation for more details.
 
 ```ts
 // entry-point.ts
 import mongoose from 'mongoose';
-import { findAndPaginatePlugin } from '@thedevoyage/mongo-filter-generator';
+import { findAndPaginatePlugin } from '@the-devoyage/mongo-filter-generator';
 mongoose.plugin(findAndPaginatePlugin);
 import { typeDefs, resolvers } from './schema';
 ```
 
-Lastly, if you are using typescript, be sure to provide the `findAndPaginate` definition to the model.
+Lastly, if you are using typescript, be sure to provide the `FindAndPaginateModel` definition to the model. This informs Typescript that the method is available.
 
 ```ts
 // UserModel.ts
-import { FindandPaginateModel } from '@thedevoyage/mongo-filter-generator';
+import { FindAndPaginateModel } from '@the-devoyage/mongo-filter-generator';
 import mongoose from 'mongoose';
 import { User as IUser } from 'types/generated';
 
 const Schema = mongoose.Schema;
 
-const UserSchema = new Schema<IUser, FindWithPaginationModel>(
+const UserSchema = new Schema<IUser, FindAndPaginateModel>(
   {
     name: {
       type: String,
@@ -319,7 +398,7 @@ const UserSchema = new Schema<IUser, FindWithPaginationModel>(
   { timestamps: true }
 );
 
-export const User = mongoose.model<IUser, FindWithPaginationModel>(
+export const User = mongoose.model<IUser, FindAndPaginateModel>(
   'User',
   UserSchema
 );
@@ -383,12 +462,13 @@ export type FilterConfig = {
 
 ### Stats
 
-The `stats` object is returned from the `FindAndPaginate` or `model.findAndPaginate()` method. Send this back to the client as a response.
+The `stats` object is returned from the `FindAndPaginate` function or the `model.findAndPaginate()` method. Send this back to the client as a response.
 
 ```ts
 export type Stats = {
   remaining: Number;
   total: Number;
   page: Number;
+  cursor: Date;
 };
 ```

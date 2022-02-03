@@ -1,5 +1,5 @@
 {
-  "version": "0.1.19",
+  "version": "0.1.21",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "@thedevoyage/mongo-filter-generator",
+  "name": "@the-devoyage/mongo-filter-generator",
   "author": "Nick",
   "module": "dist/mongo-filter-generator.esm.js",
   "size-limit": [
