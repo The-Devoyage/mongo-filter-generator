@@ -9,19 +9,19 @@ Find, filter, paginate with a few lines of code - The Mongo Filter Generator Pac
 2. Login to the github registry with your github account.
 
 ```
-npm login --registry=https://npm.pkg.github.com --scope=@thedevoyage
+npm login --registry=https://npm.pkg.github.com --scope=@the-devoyage
 ```
 
 3. In the root of the project, add the following to `.npmrc`:
 
 ```
-@thedevoyage:registry=https://npm.pkg.github.com
+@the-devoyage:registry=https://npm.pkg.github.com
 ```
 
 4. Install
 
 ```
-npm i @thedevoyage/mongo-filter-generator
+npm i @the-devoyage/mongo-filter-generator
 ```
 
 ## Highlights
@@ -270,7 +270,7 @@ Graphql Example:
 
 ```ts
 // Resolvers.ts
-import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
+import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
