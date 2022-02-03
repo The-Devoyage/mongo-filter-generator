@@ -1,14 +1,34 @@
 # Mongo Filter Generator
 
-Find, filter, paginate and more with a few lines of code - The Mongo Filter Generator Package allows the client to request filtered and paginated documents from a REST or GraphQL API.
-
-## Find and Paginate Method
-
-Add the find and paginate to any mongoose model to enabled filtered and paginated responses.
+Find, filter, paginate and more with a few lines of code - The Mongo Filter Generator Package allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
 
 ## Install
 
-`npm i @nickisyourfan/mongo-filter-generator`
+1. [Checkout](https://basetools.io/checkout/vyOL9ATx) to gain instant access to the package in the github npm registry.
+
+2. Login to the github registry with your github account.
+
+```
+npm login --registry=https://npm.pkg.github.com --scope=@thedevoyage
+```
+
+3. In the root of the project, add the following to `.npmrc`:
+
+```
+@thedevoyage:registry=https://npm.pkg.github.com
+```
+
+4. Install
+
+```
+npm i @thedevoyage/mongo-filter-generator
+```
+
+## Hilights
+
+### Find and Paginate Method
+
+Add the find and paginate to any mongoose model to enabled filtered and paginated responses. Follow the setup guide below to add this method to the model.
 
 ```ts
 const paginatedResponse = await User.findAndPaginate<IUser>(filters, options);
@@ -20,7 +40,7 @@ export interface PaginatedResponse<ModelType> {
 }
 ```
 
-## Generate Mongo
+### Generate Mongo
 
 Convert request objects to mongo filters and options. The GMF package will parse nested field or array filters from the request body.
 
@@ -33,9 +53,9 @@ const { filters, options } = GenerateMongo({
 const paginatedResponse = await User.findAndPaginate<IUser>(filters, options);
 ```
 
-## Standardized and Typed
+### Standardized and Typed
 
-The Mongo Filter Generator Package provides `fieldFilters` and `arrayFilters` types that you can use to standardize requests from the client. Typescript types are also included.
+The Mongo Filter Generator Package provides `fieldFilters` and `arrayFilters` types that you can use to standardize requests from the client. Typescript and GraphQL types are included.
 
 For example, the `GetDogsInput` is typed with the provided filters, allowing the client to have a standardized query input throughout the entire API.
 
@@ -90,11 +110,11 @@ query GetAccounts($getAccountsInput: GetAccountsInput!) {
 {
   "variables": {
     "getAccountsInput": {
-      "email": { "filterBy": "REGEX", "string": "nick" }, //StringFieldFilter
+      "email": { "filterBy": "REGEX", "string": "nick" },
       "role": [
         { "filterBy": "EQ", "int": 5 },
         { "filterBy": "LT", "int": 2 }
-      ], //IntFieldFilters in an Array
+      ]
       "filterConfig": { "operator": "AND" } }
     }
   }
@@ -103,12 +123,14 @@ query GetAccounts($getAccountsInput: GetAccountsInput!) {
 
 ## Setup
 
-### 1. Import Types (GraphQL Only)
+### 1. Import Types
+
+GraphQL:
 
 First, add the MFG `typeDefs` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and Stats within a custom schema. It also provides the `ObjectID` and `DateTime` scalars. Apollo Federation example:
 
 ```ts
-import { typeDefs as MFGTypeDefs } from '@nickisyourfan/mongo-filter-generator'; // Import types from the package.
+import { typeDefs as MFGTypeDefs } from '@thedevoyage/mongo-filter-generator'; // Import types from the package.
 import { typeDefs, resolvers } from './graphql';
 
 const schema = buildFederatedSchema([
@@ -116,6 +138,10 @@ const schema = buildFederatedSchema([
   { typeDefs: MFGTypeDefs }, // Add types to schema.
 ]);
 ```
+
+ExpressJS:
+
+If you are using express, you can optionally create types for each request body. The types are provided with the package and do not need to be imported or installed separately.
 
 ### 2. Add Field or Array Filters To Your Custom Schmea
 
@@ -181,7 +207,7 @@ Graphql Example:
 
 ```ts
 // Resolvers.ts
-import { GenerateMongo } from '@nickisyourfan/mongo-filter-generator';
+import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
@@ -221,7 +247,7 @@ app.get('/', (req, res) => {
 Use the generated filters and options, from the `GenerateMongo` method, with the provided find and paginate method.
 
 ```ts
-import { GenerateMongo } from '@nickisyourfan/mongo-filter-generator';
+import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
@@ -246,7 +272,7 @@ or
 **Note - You must Enable the `findAndPaginate()` method with Mongoose Plugins for the following to execute. Instructions below.**
 
 ```ts
-import { GenerateMongo } from '@nickisyourfan/mongo-filter-generator';
+import { GenerateMongo } from '@thedevoyage/mongo-filter-generator';
 import { Account } from 'models';
 
 export const Query: QueryResolvers = {
@@ -269,7 +295,7 @@ To apply the `findAndPaginate()` method to models, as the above example, you mus
 ```ts
 // entry-point.ts
 import mongoose from 'mongoose';
-import { findAndPaginatePlugin } from '@nickisyourfan/mongo-filter-generator';
+import { findAndPaginatePlugin } from '@thedevoyage/mongo-filter-generator';
 mongoose.plugin(findAndPaginatePlugin);
 import { typeDefs, resolvers } from './schema';
 ```
@@ -278,7 +304,7 @@ Lastly, if you are using typescript, be sure to provide the `findAndPaginate` de
 
 ```ts
 // UserModel.ts
-import { FindWithPaginationModel } from '@nickisyourfan/mongo-filter-generator';
+import { FindandPaginateModel } from '@thedevoyage/mongo-filter-generator';
 import mongoose from 'mongoose';
 import { User as IUser } from 'types/generated';
 
