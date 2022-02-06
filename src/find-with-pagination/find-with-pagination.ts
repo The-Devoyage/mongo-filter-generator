@@ -94,7 +94,5 @@ export async function FindAndPaginate<ModelType>(
     data: documents[0][params.model.modelName],
   };
 
-  console.log('formated', formatted);
-
   return formatted;
 }
