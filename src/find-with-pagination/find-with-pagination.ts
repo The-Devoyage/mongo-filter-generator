@@ -1,4 +1,4 @@
-import { PaginatedResponse, FindWithPaginationParams } from '../types';
+import { MFGTypes } from '@src/mfg-types';
 import { Schema, FilterQuery } from 'mongoose';
 
 export function findAndPaginatePlugin(schema: Schema) {
@@ -16,7 +16,7 @@ export function findAndPaginatePlugin(schema: Schema) {
 }
 
 export async function FindAndPaginate<ModelType>(
-  params: FindWithPaginationParams<ModelType>
+  params: MFGTypes.FindWithPaginationParams<ModelType>
 ) {
   const totalCountFilters = { ...params.filters };
 
@@ -89,7 +89,7 @@ export async function FindAndPaginate<ModelType>(
     documents[0].stats[0].cursor = cursor;
   }
 
-  const formatted: PaginatedResponse<ModelType> = {
+  const formatted: MFGTypes.PaginatedResponse<ModelType> = {
     stats: documents[0].stats[0] ? documents[0].stats[0] : [],
     data: documents[0][params.model.modelName],
   };

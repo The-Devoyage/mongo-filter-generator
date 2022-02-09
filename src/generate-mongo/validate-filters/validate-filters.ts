@@ -1,8 +1,4 @@
-import {
-  StringFilterBase,
-  BooleanFilterBase,
-  IntFilterBase,
-} from '../../types';
+import { MFGTypes } from '@src/mfg-types';
 
 export const isFilter = (object: any): boolean => {
   if (typeof object === 'object') {
@@ -16,7 +12,9 @@ export const isFilter = (object: any): boolean => {
   }
 };
 
-export const isStringFilter = (object: any): object is StringFilterBase => {
+export const isStringFilter = (
+  object: any
+): object is MFGTypes.StringFilterBase => {
   if (typeof object === 'object') {
     return 'string' in object;
   } else {
@@ -24,7 +22,9 @@ export const isStringFilter = (object: any): object is StringFilterBase => {
   }
 };
 
-export const isBooleanFilter = (object: any): object is BooleanFilterBase => {
+export const isBooleanFilter = (
+  object: any
+): object is MFGTypes.BooleanFilterBase => {
   if (typeof object === 'object') {
     return 'bool' in object;
   } else {
@@ -32,7 +32,7 @@ export const isBooleanFilter = (object: any): object is BooleanFilterBase => {
   }
 };
 
-export const isIntFilter = (object: any): object is IntFilterBase => {
+export const isIntFilter = (object: any): object is MFGTypes.IntFilterBase => {
   if (typeof object === 'object') {
     return 'int' in object;
   } else {
