@@ -1,6 +1,6 @@
 import { generateFilter } from './generate-filter';
 import { FilterQuery, QueryOptions } from 'mongoose';
-import { GenerateMongoArguments } from '@src/types';
+import { GenerateMongoArguments } from 'src/types';
 
 export const GenerateMongo = <Args>(params: GenerateMongoArguments<Args>) => {
   // Imports

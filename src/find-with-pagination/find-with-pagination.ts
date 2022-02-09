@@ -1,5 +1,5 @@
 import { Schema, FilterQuery } from 'mongoose';
-import { FindWithPaginationParams, PaginatedResponse } from '@src/types';
+import { FindWithPaginationParams, PaginatedResponse } from 'src/types';
 
 export function findAndPaginatePlugin(schema: Schema) {
   schema.statics.findAndPaginate = async function(

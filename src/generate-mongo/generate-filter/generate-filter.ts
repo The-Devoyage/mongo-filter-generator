@@ -9,7 +9,7 @@ import {
   GenerateFilterArguments,
   ArrayFilterByOptions,
   OperatorOptions,
-} from '@src/types';
+} from 'src/types';
 
 export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
   const {
