@@ -92,7 +92,7 @@ While with GraphQL it is required to provide the typings to the GraphQL Server, 
 ```ts
 // types.d.ts
 import {
-  StrinsFieldFilter,
+  StringFieldFilter,
   StringArrayFilter,
   IntFieldFilter,
   FilterConfig,
@@ -163,19 +163,18 @@ const response = await fetch('/api/accounts', {
 
 ## Setup
 
-### 1. Import Types
+### 1. Import Types and Resolvers
 
 GraphQL:
 
-First, add the MFG `typeDefs` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and Stats within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
+First, add the MFG `typeDefs` and `resolvers` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and `Stats` within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
 
 ```ts
-import { typeDefs as MFGTypeDefs } from '@the-devoyage/mongo-filter-generator';
-import { typeDefs, resolvers } from './graphql';
+import { GraphQL } from '@the-devoyage/mongo-filter-generator';
 
 const schema = buildFederatedSchema([
-  { typeDefs, resolvers },
-  { typeDefs: MFGTypeDefs },
+  { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
+  // ...other typeDefs and Resolvers
 ]);
 ```
 
@@ -183,9 +182,11 @@ ExpressJS:
 
 If you are using express, you can optionally create types for each request body. The types are provided with the package and do not need to be imported or installed separately.
 
-### 2. Add Field or Array Filters To Your Custom Schmea
+### 2. Add Field or Array Filters To Your Custom Schema
 
 `FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request. Check the documentation for all provided filters and types that can be used to shape requests.
+
+Since you added the `GraphQL` types and resolvers to your schema, you do not need to re-declare them in the SDL.
 
 GraphQL Example
 

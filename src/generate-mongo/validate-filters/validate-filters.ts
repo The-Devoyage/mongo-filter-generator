@@ -1,4 +1,4 @@
-import { StringFilterBase, BooleanFilterBase, IntFilterBase } from '@src/types';
+import { StringFilterBase, BooleanFilterBase, IntFilterBase } from 'src/types';
 
 export const isFilter = (object: any): boolean => {
   if (typeof object === 'object') {
