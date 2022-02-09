@@ -92,7 +92,7 @@ While with GraphQL it is required to provide the typings to the GraphQL Server, 
 ```ts
 // types.d.ts
 import {
-  StringFieldFilter,
+  StrinsFieldFilter,
   StringArrayFilter,
   IntFieldFilter,
   FilterConfig,

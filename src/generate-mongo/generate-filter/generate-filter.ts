@@ -5,11 +5,13 @@ import {
   isBooleanFilter,
 } from '../validate-filters';
 import Mongoose, { FilterQuery, isValidObjectId } from 'mongoose';
-import { MFGTypes } from '@src/mfg-types';
+import {
+  GenerateFilterArguments,
+  ArrayFilterByOptions,
+  OperatorOptions,
+} from '@src/types';
 
-export const generateFilter = <Arg>(
-  params: MFGTypes.GenerateFilterArguments<Arg>
-) => {
+export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
   const {
     operator,
     unparsedFieldFilter,
@@ -42,7 +44,7 @@ export const generateFilter = <Arg>(
   }
 
   // Check for array filters
-  let arrayOptions: MFGTypes.ArrayFilterByOptions | undefined;
+  let arrayOptions: ArrayFilterByOptions | undefined;
 
   if (filtering && 'arrayOptions' in filtering) {
     arrayOptions = filtering.arrayOptions;
@@ -205,8 +207,8 @@ const addFilter = (
   filters: FilterQuery<any>,
   location: string,
   newFilter: any,
-  operator: MFGTypes.OperatorOptions,
-  arrayOptions?: MFGTypes.ArrayFilterByOptions
+  operator: OperatorOptions,
+  arrayOptions?: ArrayFilterByOptions
 ) => {
   if (!arrayOptions) {
     if (operator in filters) {

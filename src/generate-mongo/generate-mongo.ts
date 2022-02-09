@@ -1,10 +1,8 @@
 import { generateFilter } from './generate-filter';
-import { MFGTypes } from '@src/mfg-types';
 import { FilterQuery, QueryOptions } from 'mongoose';
+import { GenerateMongoArguments } from '@src/types';
 
-export const GenerateMongo = <Args>(
-  params: MFGTypes.GenerateMongoArguments<Args>
-) => {
+export const GenerateMongo = <Args>(params: GenerateMongoArguments<Args>) => {
   // Imports
   const { fieldFilters, fieldRules, config } = params;
 
