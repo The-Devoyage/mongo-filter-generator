@@ -4,25 +4,27 @@ Find, filter, paginate with a few lines of code - The Mongo Filter Generator Pac
 
 ## Install
 
-1. [Purchase Access](https://basetools.io/checkout/vyOL9ATx) to gain instant access to the package in the github npm registry.
-
-2. Login to the github registry with your github account.
+1. Login to the github registry with your github account.
 
 ```
 npm login --registry=https://npm.pkg.github.com --scope=@the-devoyage
 ```
 
-3. In the root of the project, add the following to `.npmrc`:
+2. In the root of the project, add the following to `.npmrc`:
 
 ```
 @the-devoyage:registry=https://npm.pkg.github.com
 ```
 
-4. Install
+3. Install
 
 ```
 npm i @the-devoyage/mongo-filter-generator
 ```
+
+## Show Some Love
+
+Using mfg? Feel free to [Show Some Love$$](https://basetools.io/checkout/vyOL9ATx)
 
 ## Highlights
 
