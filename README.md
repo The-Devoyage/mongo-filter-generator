@@ -7,10 +7,10 @@ Find, filter, paginate with a few lines of code - The Mongo Filter Generator Pac
 1. Login to the github registry with your github account.
 
 ```
-npm login --registry=https://npm.pkg.github.com --scope=@the-devoyage
+npm login --registry=https://npm.pkg.github.com
 ```
 
-2. In the root of the project, add the following to `.npmrc`:
+2. In the root of the target project, add the following to the `.npmrc` file:
 
 ```
 @the-devoyage:registry=https://npm.pkg.github.com
