@@ -110,6 +110,6 @@ export type Stats = {
 };
 
 export interface PaginatedResponse<ModelType> {
-  stats?: Stats;
-  data?: ModelType[];
+  stats: Stats;
+  data: ModelType[];
 }

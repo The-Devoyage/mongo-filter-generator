@@ -1,5 +1,5 @@
 import { isFilter } from '../validate-filters';
-import { Filters } from 'src/types';
+import { Filters } from '../../types';
 
 export const parseFieldFilters = (
   object: any,
