@@ -22,8 +22,9 @@ export const GenerateMongo = <Args>(params: GenerateMongoArguments<Args>) => {
   if (config?.pagination) {
     if (config.pagination.createdAt) {
       filters['createdAt'] = {
-        [config.pagination.reverse ? '$lt' : '$gt']: config.pagination
-          .createdAt,
+        [config.pagination.reverse ? '$lt' : '$gt']: new Date(
+          config.pagination.createdAt
+        ),
       };
     }
     if ('reverse' in config.pagination) {
