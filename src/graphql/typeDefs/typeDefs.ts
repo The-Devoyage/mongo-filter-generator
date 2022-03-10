@@ -7,7 +7,6 @@ export const typeDefs = gql`
 
   # Filter Config
   input FilterConfig {
-    operator: OperatorFieldConfigEnum
     pagination: Pagination
   }
   input Pagination {
@@ -24,31 +23,25 @@ export const typeDefs = gql`
   input IntFieldFilter {
     int: Int!
     filterBy: IntFilterByEnum!
+    operator: OperatorFieldConfigEnum
   }
   input StringFieldFilter {
     string: String!
     filterBy: StringFilterByEnum!
+    operator: OperatorFieldConfigEnum
   }
   input BooleanFieldFilter {
     bool: Boolean!
     filterBy: BooleanFilterByEnum!
+    operator: OperatorFieldConfigEnum
   }
 
   # Array Filters
-  input IntArrayFilter {
-    int: Int!
-    filterBy: IntFilterByEnum!
-    arrayOptions: ArrayFilterByEnum!
-  }
-  input StringArrayFilter {
+  input StringArrayFieldFilter {
     string: [String!]!
     filterBy: StringFilterByEnum!
     arrayOptions: ArrayFilterByEnum!
-  }
-  input BooleanArrayFilter {
-    bool: Boolean!
-    filterBy: BooleanFilterByEnum!
-    arrayOptions: ArrayFilterByEnum!
+    operator: OperatorFieldConfigEnum
   }
 
   # FilterBy Options

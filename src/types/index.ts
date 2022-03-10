@@ -14,9 +14,9 @@ export type Scalars = {
 
 // Filter Config
 export type FilterConfig = {
-  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
   pagination?: Pagination | InputMaybe<Pagination>;
 };
+
 export type OperatorOptions = 'AND' | 'OR';
 
 export type Pagination = {
@@ -26,36 +26,38 @@ export type Pagination = {
 };
 
 export interface FieldRule {
-  location: String;
-  fieldFilter?: FieldFilter | ArrayFilter;
-  disabled?: Boolean;
+  location: string;
+  fieldFilter?: FieldFilter;
+  disabled?: boolean;
 }
 
 // Filters
-export type Filters = FieldFilter | ArrayFilter | undefined;
-
-export interface StringFilterBase {
-  string: string | string[];
-  filterBy: StringFilterByOptions;
-}
-export interface BooleanFilterBase {
-  bool: boolean;
-  filterBy: BooleanFilterByOptions;
-}
-export interface IntFilterBase {
-  int: number;
-  filterBy: IntFilterByOptions;
-}
-
 export type FieldFilter =
   | IntFieldFilter
   | IntFieldFilter[]
   | StringFieldFilter
   | StringFieldFilter[]
   | BooleanFieldFilter
-  | BooleanFieldFilter[];
+  | BooleanFieldFilter[]
+  | StringArrayFieldFilter
+  | StringArrayFieldFilter[]
+  | undefined;
 
-export type ArrayFilter = StringArrayFilter | StringArrayFilter[];
+export interface StringFilterBase {
+  string: string | string[];
+  filterBy: StringFilterByOptions;
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+}
+export interface BooleanFilterBase {
+  bool: boolean;
+  filterBy: BooleanFilterByOptions;
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+}
+export interface IntFilterBase {
+  int: number;
+  filterBy: IntFilterByOptions;
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+}
 
 // Field Filters
 export type IntFieldFilter = IntFilterBase;
@@ -63,7 +65,7 @@ export type StringFieldFilter = StringFilterBase;
 export type BooleanFieldFilter = BooleanFilterBase;
 
 // Array Filters
-export interface StringArrayFilter extends StringFilterBase {
+export interface StringArrayFieldFilter extends StringFilterBase {
   arrayOptions: ArrayFilterByOptions;
 }
 
@@ -74,17 +76,16 @@ export type BooleanFilterByOptions = 'EQ' | 'NE';
 export type ArrayFilterByOptions = 'IN' | 'NIN';
 
 // Arguments
-export interface GenerateMongoArguments<FieldFilters> {
-  fieldFilters: FieldFilters;
+export interface GenerateMongoArguments {
+  fieldFilters: Record<any, any>;
   config?: FilterConfig | InputMaybe<FilterConfig>;
   fieldRules?: FieldRule[];
 }
 
-export interface GenerateFilterArguments<UnparsedFieldFilter> {
-  unparsedFieldFilter: UnparsedFieldFilter;
+export interface GenerateFilterArguments {
+  fieldFilter: FieldFilter;
   location: string;
-  filters: FilterQuery<any>;
-  operator: OperatorOptions;
+  filter: FilterQuery<any>;
   fieldRules?: FieldRule[];
 }
 
