@@ -24,7 +24,7 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg? Feel free to [Show Some Love$$](https://basetools.io/checkout/vyOL9ATx)
+Using mfg? Feel free to [Show Some Love\\$\$](https://basetools.io/checkout/vyOL9ATx)
 
 ## Highlights
 
@@ -44,7 +44,7 @@ export interface PaginatedResponse<ModelType> {
 
 ### Generate Mongo
 
-Convert API requests to mongo filters and options. The GMF package will parse nested field or array filters from the request body.
+Convert API requests to mongo filters and options. The GMF package will parse nested field or array filters from the request body or graphql args -- simply pass the whole object through.
 
 ```ts
 const { filters, options } = GenerateMongo({
@@ -57,7 +57,7 @@ const paginatedResponse = await User.find(filters, options);
 
 ### Standardized and Typed
 
-The Mongo Filter Generator Package provides `fieldFilters` and `arrayFilters` types that you can use to standardize incoming requests. Both Typescript and GraphQL types are included.
+The Mongo Filter Generator Package provides `fieldFilter` types that you can use to standardize incoming requests. Both Typescript and GraphQL types are included.
 
 For example, the `GetDogsInput` is typed with filters provided by the package, allowing the client to have a standardized query input throughout the entire API.
 
@@ -75,12 +75,12 @@ const typeDefs = gql`
   input GetDogsInput {
     _id: StringFieldFilter
     age: [IntFieldFilter]
-    breeds: StringArrayFilter
+    breeds: StringArrayFieldFilter
   }
 
   type GetDogsResponse {
-    stats: Stats
-    data: [Dog!]
+    stats: Stats!
+    data: [Dog!]!
   }
 
   type Query {
@@ -136,12 +136,11 @@ const GET_ACCOUNTS = gql`
 const { data } = useQuery(GET_ACCOUNTS, {
   variables: {
     getAccountsInput: {
-      email: { filterBy: 'REGEX', string: 'nick' },
+      email: { filterBy: 'REGEX', string: 'nick', operator: 'AND' },
       role: [
-        { filterBy: 'EQ', int: 5 },
-        { filterBy: 'LT', int: 2 },
+        { filterBy: 'EQ', int: 5, operator: 'OR' },
+        { filterBy: 'LT', int: 2, operator: 'OR' },
       ],
-      filterConfig: { operator: 'AND' },
     },
   },
 });
@@ -153,12 +152,11 @@ REST Example
 const response = await fetch('/api/accounts', {
   method: 'GET',
   body: JSON.stringify({
-    email: { filterBy: 'REGEX', string: 'nick' },
+    email: { filterBy: 'REGEX', string: 'nick', operator: 'AND' },
     role: [
-      { filterBy: 'EQ', int: 5 },
-      { filterBy: 'LT', int: 2 },
+      { filterBy: 'EQ', int: 5, operator: 'OR' },
+      { filterBy: 'LT', int: 2, operator: 'OR' },
     ],
-    filterConfig: { operator: 'AND' },
   }),
 });
 ```
@@ -218,7 +216,7 @@ export const typeDefs = gql`
 
   input GetAccountsInput {
     _id: StringFieldFilter
-    users: StringArrayFilter
+    users: StringArrayFieldFilter
     email: StringFieldFilter
     role: [IntFieldFilter] # Arrays Accepted
     nested_details: NestedDetailsInput
@@ -247,18 +245,18 @@ With express you do not need to tell the server about every single detail. You c
 ```ts
 import {
   StringFieldFilter,
-  StringArrayFilter,
+  StringArrayFieldFilter,
   IntFieldFilter,
   FilterConfig,
 } from '@the-devoyage/mongo-filter-generator';
 
 export interface GetDogsRequestBody {
   _id?: StringFieldFilter;
-  name?: StringArrayFilter;
+  name?: StringArrayFieldFilter;
   breed?: StringFieldFilter;
   age?: IntFieldFilter;
-  favoriteFoods?: StringArrayFilter;
-  createdAt?: StringArrayFilter;
+  favoriteFoods?: StringArrayFieldFilter;
+  createdAt?: StringArrayFieldFilter;
   config?: FilterConfig;
 }
 ```
@@ -278,11 +276,11 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filters, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const accounts = await Account.find(filters, options);
+    const accounts = await Account.find(filter, options);
 
     return accounts;
   },
@@ -294,31 +292,31 @@ Express JS Example
 ```ts
 import {
   StringFieldFilter,
-  StringArrayFilter,
+  StringArrayFieldFilter,
   IntFieldFilter,
   FilterConfig,
 } from '@the-devoyage/mongo-filter-generator';
 
 export interface GetDogsRequestBody {
   _id?: StringFieldFilter;
-  name?: StringArrayFilter;
+  name?: StringArrayFieldFilter;
   breed?: StringFieldFilter;
   age?: IntFieldFilter;
-  favoriteFoods?: StringArrayFilter;
-  createdAt?: StringArrayFilter;
+  favoriteFoods?: StringArrayFieldFilter;
+  createdAt?: StringArrayFieldFilter;
   config?: FilterConfig;
 }
 
 app.get('/', (req, res) => {
   const request: GetDogsRequestBody = req.body;
 
-  const { filters, options } = GenerateMongo({
+  const { filter, options } = GenerateMongo({
     fieldFilters: request,
     config: request.config,
   });
 
   // Use filters to find the requested documents
-  const dogs = await Dog.find(filters);
+  const dogs = await Dog.find(filter);
 
   res.json(dogs);
 });
@@ -334,12 +332,12 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filters, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
     const paginatedAccounts = await FindAndPaginate({
-      filters,
+      filter,
       options,
       model: Account,
     });
@@ -359,11 +357,11 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filters, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const paginatedAccounts = await Account.findAndPaginate(filters, options);
+    const paginatedAccounts = await Account.findAndPaginate(filter, options);
 
     return paginatedAccounts;
   },
@@ -417,6 +415,7 @@ IntFieldFilter
 type IntFieldFilter = {
   filterBy: 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
   int: number;
+  operator?: 'AND' | 'OR';
 };
 ```
 
@@ -426,6 +425,7 @@ StringFieldFilter
 type StringFieldFilter = {
   filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
   string: string;
+  operator?: 'AND' | 'OR';
 };
 ```
 
@@ -435,16 +435,18 @@ BooleanFieldFilter
 type BooleanFieldFilter = {
   filterBy: 'EQ' | 'NE';
   bool: Boolean;
+  operator?: 'AND' | 'OR';
 };
 ```
 
 ### Array Filters
 
 ```ts
-type StringArrayFilter = {
+type StringArrayFieldFilter = {
   filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
   string: string[];
   arrayOptions: 'IN' | 'NIN';
+  operator?: 'AND' | 'OR';
 };
 ```
 
@@ -454,7 +456,6 @@ Send with request to API, and apply to the config option within the `GenerateMon
 
 ```ts
 export type FilterConfig = {
-  operator?: 'AND' | 'OR';
   pagination?: {
     limit?: number;
     reverse?: boolean;
