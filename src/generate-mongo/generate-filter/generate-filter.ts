@@ -1,4 +1,4 @@
-import { parseFieldFilters } from '../parse-filters';
+import { parseFieldFilter } from '../parse-filters';
 import {
   isStringFilter,
   isIntFilter,
@@ -11,34 +11,27 @@ import {
   OperatorOptions,
 } from '../../types';
 
-export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
-  const {
-    operator,
-    unparsedFieldFilter,
-    location,
-    filters,
-    fieldRules,
-  } = params;
+export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
+  const { filter, fieldRules } = params;
+  let { fieldFilter, location } = params;
 
   // Parse Field Filters
-  let {
-    filtering,
-    location: parsedLocation,
-  } = parseFieldFilters(unparsedFieldFilter, [location]);
+  const parsed = parseFieldFilter(fieldFilter, [location]);
+
+  fieldFilter = parsed.fieldFilter;
+  location = parsed.location;
 
   // Find overriding Field Rule
-  const fieldRule = fieldRules?.find(
-    f => f.location === parsedLocation ?? location
-  );
+  const fieldRule = fieldRules?.find(f => f.location === location);
 
   if (fieldRule) {
     if (fieldRule) {
-      if (fieldRule.disabled && Object.keys(unparsedFieldFilter).length) {
+      if (fieldRule.disabled && Object.keys(fieldFilter ?? {}).length) {
         throw new Error(`MFG ERROR: Access to property "${location}" denied.`);
       }
       if (fieldRule.fieldFilter) {
-        filtering = fieldRule.fieldFilter;
-        parsedLocation = fieldRule.location as Extract<keyof Arg, string>;
+        fieldFilter = fieldRule.fieldFilter;
+        location = fieldRule.location as Extract<keyof Arg, string>;
       }
     }
   }
@@ -46,32 +39,32 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
   // Check for array filters
   let arrayOptions: ArrayFilterByOptions | undefined;
 
-  if (filtering && 'arrayOptions' in filtering) {
-    arrayOptions = filtering.arrayOptions;
+  if (fieldFilter && 'arrayOptions' in fieldFilter) {
+    arrayOptions = fieldFilter.arrayOptions;
   }
 
   // Convert to Mongo Filters
-  if (isStringFilter(filtering)) {
-    switch (filtering.filterBy) {
+  if (isStringFilter(fieldFilter)) {
+    switch (fieldFilter.filterBy) {
       case 'REGEX': {
         let search: RegExp | RegExp[] = [];
         if (arrayOptions) {
-          for (const str of filtering.string as string[]) {
+          for (const str of fieldFilter.string as string[]) {
             const regex = new RegExp(`${str}`, 'i');
             search.push(regex);
           }
         } else {
-          search = new RegExp(`${filtering.string}`, 'i');
+          search = new RegExp(`${fieldFilter.string}`, 'i');
         }
-        addFilter(filters, parsedLocation, search, operator, arrayOptions);
+        addFilter(filter, location, search, fieldFilter.operator, arrayOptions);
         break;
       }
       case 'MATCH': {
         addFilter(
-          filters,
-          parsedLocation,
-          filtering.string,
-          operator,
+          filter,
+          location,
+          fieldFilter.string,
+          fieldFilter.operator,
           arrayOptions
         );
         break;
@@ -81,7 +74,7 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
         let search: Mongoose.Types.ObjectId | Mongoose.Types.ObjectId[] = [];
 
         if (arrayOptions) {
-          for (const str of filtering.string as string[]) {
+          for (const str of fieldFilter.string as string[]) {
             const isValidID = isValidObjectId(str);
             if (!isValidID) {
               throw new Error(`Invalid Mongo Object ID: ${str}.`);
@@ -90,136 +83,141 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments<Arg>) => {
             search.push(_id);
           }
         } else {
-          const isValidID = isValidObjectId(filtering.string);
+          const isValidID = isValidObjectId(fieldFilter.string);
           if (!isValidID) {
             throw new Error('Invalid Mongo Object ID.');
           }
-          search = new Mongoose.Types.ObjectId(filtering.string as string);
+          search = new Mongoose.Types.ObjectId(fieldFilter.string as string);
         }
 
-        addFilter(filters, parsedLocation, search, operator, arrayOptions);
+        addFilter(filter, location, search, fieldFilter.operator, arrayOptions);
         break;
       }
     }
-  } else if (isBooleanFilter(filtering)) {
-    switch (filtering.filterBy) {
+  } else if (isBooleanFilter(fieldFilter)) {
+    switch (fieldFilter.filterBy) {
       case 'EQ': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $eq: filtering.bool,
+            $eq: fieldFilter.bool,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
       case 'NE': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $ne: filtering.bool,
+            $ne: fieldFilter.bool,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
     }
-  } else if (isIntFilter(filtering)) {
-    switch (filtering.filterBy) {
+  } else if (isIntFilter(fieldFilter)) {
+    switch (fieldFilter.filterBy) {
       case 'LT': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $lt: filtering.int,
+            $lt: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
 
       case 'GT': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $gt: filtering.int,
+            $gt: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
       case 'EQ': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $eq: filtering.int,
+            $eq: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
 
       case 'LTE': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $lte: filtering.int,
+            $lte: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
 
       case 'GTE': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $gte: filtering.int,
+            $gte: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
 
       case 'NE': {
         addFilter(
-          filters,
-          parsedLocation,
+          filter,
+          location,
           {
-            $ne: filtering.int,
+            $ne: fieldFilter.int,
           },
-          operator
+          fieldFilter.operator
         );
         break;
       }
     }
   }
-  return filters;
+  return filter;
 };
 
 const addFilter = (
-  filters: FilterQuery<any>,
+  filter: FilterQuery<any>,
   location: string,
   newFilter: any,
-  operator: OperatorOptions,
+  operator?: OperatorOptions | null,
   arrayOptions?: ArrayFilterByOptions
 ) => {
+  const parsedOperator = `$${operator ? operator.toLowerCase() : 'or'}`;
+
   if (!arrayOptions) {
-    if (operator in filters) {
-      filters[operator] = [...filters[operator], { [location]: newFilter }];
+    if (parsedOperator in filter) {
+      filter[parsedOperator] = [
+        ...filter[parsedOperator],
+        { [location]: newFilter },
+      ];
     } else {
-      filters[operator] = [{ [location]: newFilter }];
+      filter[parsedOperator] = [{ [location]: newFilter }];
     }
   } else {
-    if (operator in filters) {
-      filters[operator] = [
-        ...filters[operator],
+    if (parsedOperator in filter) {
+      filter[parsedOperator] = [
+        ...filter[parsedOperator],
         {
           [location]: {
             [`$${arrayOptions.toLowerCase()}`]: newFilter,
@@ -227,7 +225,7 @@ const addFilter = (
         },
       ];
     } else {
-      filters[operator] = [
+      filter[parsedOperator] = [
         { [location]: { [`$${arrayOptions.toLowerCase()}`]: newFilter } },
       ];
     }

@@ -1,14 +1,14 @@
 import { isFilter } from '../validate-filters';
-import { Filters } from '../../types';
+import { FieldFilter } from '../../types';
 
-export const parseFieldFilters = (
+export const parseFieldFilter = (
   object: any,
   location: string[]
 ): {
-  filtering: Filters;
+  fieldFilter: FieldFilter;
   location: string;
 } => {
-  const deepFilterSearch = (object: any): Filters => {
+  const deepFilterSearch = (object: any): FieldFilter => {
     if (isFilter(object)) {
       return object;
     }
@@ -23,7 +23,7 @@ export const parseFieldFilters = (
     return;
   };
 
-  const filtering = deepFilterSearch(object);
+  const fieldFilter = deepFilterSearch(object);
 
-  return { filtering, location: location.join('.') };
+  return { fieldFilter, location: location.join('.') };
 };
