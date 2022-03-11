@@ -24,7 +24,7 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg? Feel free to [Show Some Love\\$\$](https://basetools.io/checkout/vyOL9ATx)
+Using mfg? Feel free to [Show Some Love\\\$\$](https://basetools.io/checkout/vyOL9ATx)
 
 ## Highlights
 
@@ -33,7 +33,7 @@ Using mfg? Feel free to [Show Some Love\\$\$](https://basetools.io/checkout/vyOL
 Add the find and paginate to any mongoose model to enabled filtered and paginated responses. Follow the setup guide below to add this method to the model.
 
 ```ts
-const paginatedResponse = await User.findAndPaginate<IUser>(filters, options);
+const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
 
 // Returns an object with the type PaginatedResponse
 export interface PaginatedResponse<ModelType> {
@@ -47,12 +47,12 @@ export interface PaginatedResponse<ModelType> {
 Convert API requests to mongo filters and options. The GMF package will parse nested field or array filters from the request body or graphql args -- simply pass the whole object through.
 
 ```ts
-const { filters, options } = GenerateMongo({
+const { filter, options } = GenerateMongo({
   fieldFilters: req.body,
   config: req.body.config,
 });
 
-const paginatedResponse = await User.find(filters, options);
+const paginatedResponse = await User.find(filter, options);
 ```
 
 ### Standardized and Typed
@@ -324,7 +324,7 @@ app.get('/', (req, res) => {
 
 ### 4. Find and Paginate
 
-Use the generated `filters` and `options`, from the `GenerateMongo` method, with the provided find and paginate function.
+Use the generated `filter` and `options`, from the `GenerateMongo` method, with the provided find and paginate function.
 
 ```ts
 import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
