@@ -196,66 +196,72 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
   } else if (isDateFilter(fieldFilter)) {
     switch (fieldFilter.filterBy) {
       case 'LTE': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $lte: fieldFilter.date,
+            $lte: date,
           },
           fieldFilter.operator
         );
         break;
       }
       case 'GTE': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $gte: fieldFilter.date,
+            $gte: date,
           },
           fieldFilter.operator
         );
         break;
       }
       case 'NE': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $ne: fieldFilter.date,
+            $ne: date,
           },
           fieldFilter.operator
         );
         break;
       }
       case 'EQ': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $eq: fieldFilter.date,
+            $eq: date,
           },
           fieldFilter.operator
         );
         break;
       }
       case 'GT': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $gt: fieldFilter.date,
+            $gt: date,
           },
           fieldFilter.operator
         );
         break;
       }
       case 'LT': {
+        const date = new Date(fieldFilter.date);
         addFilter(
           filter,
           location,
           {
-            $lt: fieldFilter.date,
+            $lt: date,
           },
           fieldFilter.operator
         );
