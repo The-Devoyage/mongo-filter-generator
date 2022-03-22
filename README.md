@@ -24,7 +24,7 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg? Feel free to [Show Some Love\\\$\$](https://basetools.io/checkout/vyOL9ATx)
+Using mfg? Feel free to [Show Some Love\\\\$\$](https://basetools.io/checkout/vyOL9ATx)
 
 ## Highlights
 
@@ -435,6 +435,16 @@ BooleanFieldFilter
 type BooleanFieldFilter = {
   filterBy: 'EQ' | 'NE';
   bool: Boolean;
+  operator?: 'AND' | 'OR';
+};
+```
+
+DateFieldFilter
+
+```ts
+type DateFieldFilter = {
+  date: Date;
+  filterBy: 'EQ' | 'NE' | 'LT' | 'GT' | 'LTE' | 'GTE';
   operator?: 'AND' | 'OR';
 };
 ```

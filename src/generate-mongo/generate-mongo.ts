@@ -3,12 +3,7 @@ import { FilterQuery, QueryOptions } from 'mongoose';
 import { GenerateMongoArguments } from '../types';
 
 export const GenerateMongo = (params: GenerateMongoArguments) => {
-  // Imports
   const { fieldFilters, fieldRules, config } = params;
-
-  // const operator = `$${
-  //   config?.operator ? config?.operator.toLowerCase() : 'or'
-  // }` as any;
 
   const filter: FilterQuery<unknown> = {};
 
