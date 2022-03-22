@@ -3,6 +3,7 @@ import {
   isStringFilter,
   isIntFilter,
   isBooleanFilter,
+  isDateFilter,
 } from '../validate-filters';
 import Mongoose, { FilterQuery, isValidObjectId } from 'mongoose';
 import {
@@ -186,6 +187,75 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
           location,
           {
             $ne: fieldFilter.int,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+    }
+  } else if (isDateFilter(fieldFilter)) {
+    switch (fieldFilter.filterBy) {
+      case 'LTE': {
+        addFilter(
+          filter,
+          location,
+          {
+            $lte: fieldFilter.date,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+      case 'GTE': {
+        addFilter(
+          filter,
+          location,
+          {
+            $gte: fieldFilter.date,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+      case 'NE': {
+        addFilter(
+          filter,
+          location,
+          {
+            $ne: fieldFilter.date,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+      case 'EQ': {
+        addFilter(
+          filter,
+          location,
+          {
+            $eq: fieldFilter.date,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+      case 'GT': {
+        addFilter(
+          filter,
+          location,
+          {
+            $gt: fieldFilter.date,
+          },
+          fieldFilter.operator
+        );
+        break;
+      }
+      case 'LT': {
+        addFilter(
+          filter,
+          location,
+          {
+            $lt: fieldFilter.date,
           },
           fieldFilter.operator
         );

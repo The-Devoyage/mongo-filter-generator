@@ -35,6 +35,11 @@ export const typeDefs = gql`
     filterBy: BooleanFilterByEnum!
     operator: OperatorFieldConfigEnum
   }
+  input DateFieldFilter {
+    date: DateTime!
+    filterBy: DateFilterByEnum!
+    operator: OperatorFieldConfigEnum
+  }
 
   # Array Filters
   input StringArrayFieldFilter {
@@ -61,6 +66,14 @@ export const typeDefs = gql`
     REGEX
     MATCH
     OBJECTID
+  }
+  enum DateFilterByEnum {
+    EQ
+    GT
+    LT
+    GTE
+    LTE
+    NE
   }
   enum ArrayFilterByEnum {
     IN

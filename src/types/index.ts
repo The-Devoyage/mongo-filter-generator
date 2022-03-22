@@ -39,6 +39,8 @@ export type FieldFilter =
   | StringFieldFilter[]
   | BooleanFieldFilter
   | BooleanFieldFilter[]
+  | DateFieldFilter
+  | DateFieldFilter[]
   | StringArrayFieldFilter
   | StringArrayFieldFilter[]
   | undefined;
@@ -58,11 +60,17 @@ export interface IntFilterBase {
   filterBy: IntFilterByOptions;
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
 }
+export interface DateFieldFilterBase {
+  date: Date;
+  filterBy: DateFilterByOptions;
+  operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+}
 
 // Field Filters
 export type IntFieldFilter = IntFilterBase;
 export type StringFieldFilter = StringFilterBase;
 export type BooleanFieldFilter = BooleanFilterBase;
+export type DateFieldFilter = DateFieldFilterBase;
 
 // Array Filters
 export interface StringArrayFieldFilter extends StringFilterBase {
@@ -73,6 +81,7 @@ export interface StringArrayFieldFilter extends StringFilterBase {
 export type IntFilterByOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
 export type StringFilterByOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
 export type BooleanFilterByOptions = 'EQ' | 'NE';
+export type DateFilterByOptions = 'EQ' | 'NE' | 'GT' | 'LT' | 'GTE' | 'LTE';
 export type ArrayFilterByOptions = 'IN' | 'NIN';
 
 // Arguments

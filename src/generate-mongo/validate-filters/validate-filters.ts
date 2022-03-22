@@ -2,12 +2,16 @@ import {
   StringFilterBase,
   BooleanFilterBase,
   IntFilterBase,
+  DateFieldFilterBase,
 } from '../../types';
 
 export const isFilter = (object: any): boolean => {
   if (typeof object === 'object') {
     const objectIsFilter =
-      isStringFilter(object) || isBooleanFilter(object) || isIntFilter(object);
+      isStringFilter(object) ||
+      isBooleanFilter(object) ||
+      isIntFilter(object) ||
+      isDateFilter(object);
     return objectIsFilter;
   } else {
     throw new Error(
@@ -35,6 +39,14 @@ export const isBooleanFilter = (object: any): object is BooleanFilterBase => {
 export const isIntFilter = (object: any): object is IntFilterBase => {
   if (typeof object === 'object') {
     return 'int' in object;
+  } else {
+    return false;
+  }
+};
+
+export const isDateFilter = (object: any): object is DateFieldFilterBase => {
+  if (typeof object === 'object') {
+    return 'date' in object;
   } else {
     return false;
   }
