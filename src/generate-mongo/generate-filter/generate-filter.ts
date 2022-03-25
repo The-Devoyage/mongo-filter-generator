@@ -57,17 +57,25 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
         } else {
           search = new RegExp(`${fieldFilter.string}`, 'i');
         }
-        addFilter(filter, location, search, fieldFilter.operator, arrayOptions);
+        addFilter({
+          filter,
+          location,
+          newFilter: search,
+          operator: fieldFilter.operator,
+          arrayOptions,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'MATCH': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          fieldFilter.string,
-          fieldFilter.operator,
-          arrayOptions
-        );
+          newFilter: fieldFilter.string,
+          operator: fieldFilter.operator,
+          arrayOptions,
+          groups: fieldFilter.groups,
+        });
         break;
       }
 
@@ -91,105 +99,121 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
           search = new Mongoose.Types.ObjectId(fieldFilter.string as string);
         }
 
-        addFilter(filter, location, search, fieldFilter.operator, arrayOptions);
+        addFilter({
+          filter,
+          location,
+          newFilter: search,
+          operator: fieldFilter.operator,
+          arrayOptions,
+          groups: fieldFilter.groups,
+        });
         break;
       }
     }
   } else if (isBooleanFilter(fieldFilter)) {
     switch (fieldFilter.filterBy) {
       case 'EQ': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $eq: fieldFilter.bool,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          arrayOptions,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'NE': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $ne: fieldFilter.bool,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
     }
   } else if (isIntFilter(fieldFilter)) {
     switch (fieldFilter.filterBy) {
       case 'LT': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $lt: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
 
       case 'GT': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $gt: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'EQ': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $eq: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
 
       case 'LTE': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $lte: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
 
       case 'GTE': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $gte: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
 
       case 'NE': {
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $ne: fieldFilter.int,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
     }
@@ -197,74 +221,80 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
     switch (fieldFilter.filterBy) {
       case 'LTE': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $lte: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'GTE': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $gte: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'NE': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $ne: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'EQ': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $eq: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'GT': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $gt: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
       case 'LT': {
         const date = new Date(fieldFilter.date);
-        addFilter(
+        addFilter({
           filter,
           location,
-          {
+          newFilter: {
             $lt: date,
           },
-          fieldFilter.operator
-        );
+          operator: fieldFilter.operator,
+          groups: fieldFilter.groups,
+        });
         break;
       }
     }
@@ -272,17 +302,68 @@ export const generateFilter = <Arg>(params: GenerateFilterArguments) => {
   return filter;
 };
 
-const addFilter = (
-  filter: FilterQuery<any>,
-  location: string,
-  newFilter: any,
-  operator?: OperatorOptions | null,
-  arrayOptions?: ArrayFilterByOptions
-) => {
+const addFilter = (params: {
+  filter: FilterQuery<any>;
+  location: string;
+  newFilter: any;
+  operator?: OperatorOptions | null;
+  arrayOptions?: ArrayFilterByOptions;
+  groups?: string[];
+}) => {
+  const {
+    filter,
+    location,
+    newFilter,
+    operator,
+    arrayOptions,
+    groups,
+  } = params;
   const parsedOperator = `$${operator ? operator.toLowerCase() : 'or'}`;
 
   if (!arrayOptions) {
-    if (parsedOperator in filter) {
+    if (groups) {
+      for (const group of groups) {
+        const operatorType = group.includes('.or')
+          ? '$or'
+          : group.includes('.and')
+          ? '$and'
+          : null;
+
+        if (!operatorType) {
+          throw Error(
+            'Group names must contain `.and` or `.or` in order to categorize the filter type and function.'
+          );
+        }
+
+        if (filter[operatorType]) {
+          const updating = filter[operatorType]?.find(
+            existing => existing.group === group
+          );
+
+          if (updating) {
+            updating[parsedOperator] = [
+              ...(updating[parsedOperator] ?? []),
+              { [location]: newFilter },
+            ];
+          } else {
+            filter[operatorType] = [
+              ...(filter[operatorType] ?? []),
+              {
+                [parsedOperator]: [{ [location]: newFilter }],
+                group,
+              },
+            ];
+          }
+        } else {
+          filter[operatorType] = [
+            {
+              [parsedOperator]: [{ [location]: newFilter }],
+              group,
+            },
+          ];
+        }
+      }
+    } else if (parsedOperator in filter) {
       filter[parsedOperator] = [
         ...filter[parsedOperator],
         { [location]: newFilter },
@@ -291,7 +372,61 @@ const addFilter = (
       filter[parsedOperator] = [{ [location]: newFilter }];
     }
   } else {
-    if (parsedOperator in filter) {
+    if (groups) {
+      for (const group of groups) {
+        const operatorType = group.includes('.or')
+          ? '$or'
+          : group.includes('.and')
+          ? '$and'
+          : null;
+
+        if (!operatorType) {
+          throw Error(
+            'Group names must contain `.and` or `.or` in order to categorize the filter type and function.'
+          );
+        }
+
+        if (filter[operatorType]) {
+          const updating = filter[operatorType]?.find(
+            existing => existing.group === group
+          );
+
+          if (updating) {
+            updating[parsedOperator] = [
+              ...(updating[parsedOperator] ?? []),
+              {
+                [location]: { [`$${arrayOptions.toLowerCase()}`]: newFilter },
+              },
+            ];
+          } else {
+            filter[operatorType] = [
+              ...(filter[operatorType] ?? []),
+              {
+                [parsedOperator]: [
+                  {
+                    [location]: {
+                      [`$${arrayOptions.toLowerCase()}`]: newFilter,
+                    },
+                  },
+                ],
+                group,
+              },
+            ];
+          }
+        } else {
+          filter[operatorType] = [
+            {
+              [parsedOperator]: [
+                {
+                  [location]: { [`$${arrayOptions.toLowerCase()}`]: newFilter },
+                },
+              ],
+              group,
+            },
+          ];
+        }
+      }
+    } else if (parsedOperator in filter) {
       filter[parsedOperator] = [
         ...filter[parsedOperator],
         {

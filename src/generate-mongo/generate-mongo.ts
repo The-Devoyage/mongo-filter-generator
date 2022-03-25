@@ -35,7 +35,6 @@ export const GenerateMongo = (params: GenerateMongoArguments) => {
   for (const location in fieldFilters) {
     if (Array.isArray(fieldFilters[location])) {
       const fieldFiltersArray: any = fieldFilters[location];
-
       for (const arrayFilter of fieldFiltersArray) {
         generateFilter({
           fieldFilter: arrayFilter,
@@ -68,6 +67,20 @@ export const GenerateMongo = (params: GenerateMongoArguments) => {
 
   // Return Filters and Options
   if (Object.keys(filter).length) {
+    if (filter['$or']) {
+      for (const group of filter['$or']) {
+        if ('group' in group) {
+          delete group.group;
+        }
+      }
+    }
+    if (filter['$and']) {
+      for (const group of filter['$and']) {
+        if ('group' in group) {
+          delete group.group;
+        }
+      }
+    }
     return { filter, options };
   } else {
     return { filter: {}, options };

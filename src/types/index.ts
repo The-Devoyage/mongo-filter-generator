@@ -49,21 +49,25 @@ export interface StringFilterBase {
   string: string | string[];
   filterBy: StringFilterByOptions;
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  groups?: string[];
 }
 export interface BooleanFilterBase {
   bool: boolean;
   filterBy: BooleanFilterByOptions;
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  groups?: string[];
 }
 export interface IntFilterBase {
   int: number;
   filterBy: IntFilterByOptions;
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  groups?: string[];
 }
 export interface DateFieldFilterBase {
   date: Date;
   filterBy: DateFilterByOptions;
   operator?: OperatorOptions | InputMaybe<OperatorOptions>;
+  groups?: string[];
 }
 
 // Field Filters
