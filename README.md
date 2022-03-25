@@ -24,7 +24,7 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg? Feel free to [Show Some Love\\\\$\$](https://basetools.io/checkout/vyOL9ATx)
+Using mfg? Feel free to [Show Some Love\\\\\\\\\\\\\\\\\$\$](https://basetools.io/checkout/vyOL9ATx)
 
 ## Highlights
 
@@ -405,6 +405,98 @@ export const User = mongoose.model<IUser, FindAndPaginateModel>(
 );
 ```
 
+### 5. Groups
+
+Groups are included as a base part of all filters and allow you to query multiple properties within and/or groupings when constructing the request.
+There is no additional setup to use grouped filters. All group names must end with `.and` or `.or` in order to specify the functionality of the group.
+
+Let's query for users as an example.
+
+```graphql
+type User {
+  name: String!
+  age: Int!
+  married: Boolean!
+  _id: ID!
+  createdAt: DateTime!
+  favFoods: [String!]!
+}
+```
+
+1. Construct a query with groups. This query will find users who have a favorite food of pizza or wings AND have a name of jim or john.
+
+```json
+{
+  "getAllUsersInput": {
+    "favFoods": [
+      {
+        "arrayOptions": "IN",
+        "filterBy": "REGEX",
+        "string": ["pizza"],
+        "operator": "OR",
+        "groups": ["favFoodsGroup.and"]
+      },
+      {
+        "arrayOptions": "IN",
+        "filterBy": "REGEX",
+        "string": ["wings"],
+        "operator": "OR",
+        "groups": ["favFoodsGroup.and"]
+      }
+    ],
+    "name": [
+      {
+        "filterBy": "REGEX",
+        "operator": "OR",
+        "string": "jim",
+        "groups": ["namesGroup.or"]
+      },
+      {
+        "filterBy": "REGEX",
+        "operator": "OR",
+        "string": "john",
+        "groups": ["namesGroup.or"]
+      }
+    ]
+  }
+}
+```
+
+2. The Generate Mongo Function will return filters that group the properties together by group name and and/or condition.
+
+```json
+{
+  "$or": [
+    {
+      "$or": [
+        {
+          "name": {}
+        },
+        {
+          "name": {}
+        }
+      ]
+    }
+  ],
+  "$and": [
+    {
+      "$or": [
+        {
+          "favFoods": {
+            "$in": [{}]
+          }
+        },
+        {
+          "favFoods": {
+            "$in": [{}]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Reference
 
 ### Field Filters
@@ -416,6 +508,7 @@ type IntFieldFilter = {
   filterBy: 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
   int: number;
   operator?: 'AND' | 'OR';
+  groups: string[];
 };
 ```
 
@@ -426,6 +519,7 @@ type StringFieldFilter = {
   filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
   string: string;
   operator?: 'AND' | 'OR';
+  groups: string[];
 };
 ```
 
@@ -436,6 +530,7 @@ type BooleanFieldFilter = {
   filterBy: 'EQ' | 'NE';
   bool: Boolean;
   operator?: 'AND' | 'OR';
+  groups: string[];
 };
 ```
 
@@ -446,6 +541,7 @@ type DateFieldFilter = {
   date: Date;
   filterBy: 'EQ' | 'NE' | 'LT' | 'GT' | 'LTE' | 'GTE';
   operator?: 'AND' | 'OR';
+  groups: string[];
 };
 ```
 
@@ -457,6 +553,7 @@ type StringArrayFieldFilter = {
   string: string[];
   arrayOptions: 'IN' | 'NIN';
   operator?: 'AND' | 'OR';
+  groups: string[];
 };
 ```
 

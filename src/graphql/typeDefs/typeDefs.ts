@@ -24,21 +24,25 @@ export const typeDefs = gql`
     int: Int!
     filterBy: IntFilterByEnum!
     operator: OperatorFieldConfigEnum
+    groups: [String!]
   }
   input StringFieldFilter {
     string: String!
     filterBy: StringFilterByEnum!
     operator: OperatorFieldConfigEnum
+    groups: [String!]
   }
   input BooleanFieldFilter {
     bool: Boolean!
     filterBy: BooleanFilterByEnum!
     operator: OperatorFieldConfigEnum
+    groups: [String!]
   }
   input DateFieldFilter {
     date: DateTime!
     filterBy: DateFilterByEnum!
     operator: OperatorFieldConfigEnum
+    groups: [String!]
   }
 
   # Array Filters
@@ -47,6 +51,7 @@ export const typeDefs = gql`
     filterBy: StringFilterByEnum!
     arrayOptions: ArrayFilterByEnum!
     operator: OperatorFieldConfigEnum
+    groups: [String!]
   }
 
   # FilterBy Options
