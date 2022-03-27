@@ -6,6 +6,9 @@ export const typeDefs = gql`
   scalar ObjectID
 
   # Filter Config
+  """
+  Global configuration details.
+  """
   input FilterConfig {
     pagination: Pagination
   }
@@ -20,24 +23,38 @@ export const typeDefs = gql`
   }
 
   # Field Filters
+
+  """
+  Filter for documents which have a property that is an Integer.
+  """
   input IntFieldFilter {
     int: Int!
     filterBy: IntFilterByEnum!
     operator: OperatorFieldConfigEnum
     groups: [String!]
   }
+
+  """
+  Filter for documents which have a property that is a string. Filter by REGEX, ObjectID, or Match.
+  """
   input StringFieldFilter {
     string: String!
     filterBy: StringFilterByEnum!
     operator: OperatorFieldConfigEnum
     groups: [String!]
   }
+  """
+  Filter for documents which have a property that is a Boolean.
+  """
   input BooleanFieldFilter {
     bool: Boolean!
     filterBy: BooleanFilterByEnum!
     operator: OperatorFieldConfigEnum
     groups: [String!]
   }
+  """
+  Filter for documents which have a property that is a Date.
+  """
   input DateFieldFilter {
     date: DateTime!
     filterBy: DateFilterByEnum!
@@ -46,6 +63,9 @@ export const typeDefs = gql`
   }
 
   # Array Filters
+  """
+  Filter for documents which have a property that is an array of strings..
+  """
   input StringArrayFieldFilter {
     string: [String!]!
     filterBy: StringFilterByEnum!
@@ -55,6 +75,9 @@ export const typeDefs = gql`
   }
 
   # FilterBy Options
+  """
+  Equal or Not Equal
+  """
   enum BooleanFilterByEnum {
     EQ
     NE

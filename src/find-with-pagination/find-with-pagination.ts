@@ -3,11 +3,11 @@ import { FindWithPaginationParams, PaginatedResponse } from '../types';
 
 export function findAndPaginatePlugin(schema: Schema) {
   schema.statics.findAndPaginate = async function(
-    filters: FilterQuery<any>,
-    options: Record<any, any>
+    filter: FilterQuery<unknown>,
+    options: Record<string, unknown>
   ) {
     const paginatedResponse = await FindAndPaginate({
-      filters,
+      filter,
       options,
       model: this,
     });
@@ -18,22 +18,22 @@ export function findAndPaginatePlugin(schema: Schema) {
 export async function FindAndPaginate<ModelType>(
   params: FindWithPaginationParams<ModelType>
 ) {
-  const totalCountFilters = { ...params.filters };
+  const totalCountFilters = { ...params.filter };
 
   if ('createdAt' in totalCountFilters) {
     delete totalCountFilters.createdAt;
   }
 
   const totalCount = await params.model.countDocuments(
-    totalCountFilters as typeof params.model
+    totalCountFilters as FilterQuery<typeof params.model>
   );
 
   const documents = await params.model.aggregate([
-    { $match: params.filters },
+    { $match: params.filter },
     { $sort: params.options.sort },
     {
       $facet: {
-        [params.model.modelName]: [{ $limit: params.options.limit }],
+        [params.model.modelName]: [{ $limit: params.options.limit ?? 4 }],
         stats: [
           {
             $count: 'count',
