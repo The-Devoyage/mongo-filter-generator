@@ -1,4 +1,4 @@
-import { Model, FilterQuery } from 'mongoose';
+import { Model, FilterQuery, ObjectId, QueryOptions } from 'mongoose';
 
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -8,8 +8,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  DateTime: any;
-  ObjectID: any;
+  DateTime: Date;
+  ObjectID: ObjectId;
 };
 
 // Filter Config
@@ -34,16 +34,10 @@ export interface FieldRule {
 // Filters
 export type FieldFilter =
   | IntFieldFilter
-  | IntFieldFilter[]
   | StringFieldFilter
-  | StringFieldFilter[]
   | BooleanFieldFilter
-  | BooleanFieldFilter[]
   | DateFieldFilter
-  | DateFieldFilter[]
-  | StringArrayFieldFilter
-  | StringArrayFieldFilter[]
-  | undefined;
+  | StringArrayFieldFilter;
 
 export interface StringFilterBase {
   string: string | string[];
@@ -89,30 +83,38 @@ export type DateFilterByOptions = 'EQ' | 'NE' | 'GT' | 'LT' | 'GTE' | 'LTE';
 export type ArrayFilterByOptions = 'IN' | 'NIN';
 
 // Arguments
-export interface GenerateMongoArguments {
-  fieldFilters: Record<any, any>;
+export interface GenerateMongoArguments<DocumentType> {
+  fieldFilters: Partial<Record<keyof DocumentType, object | null>>;
   config?: FilterConfig | InputMaybe<FilterConfig>;
   fieldRules?: FieldRule[];
 }
 
 export interface GenerateFilterArguments {
-  fieldFilter: FieldFilter;
+  fieldFilter?: FieldFilter;
   location: string;
-  filter: FilterQuery<any>;
-  fieldRules?: FieldRule[];
+  fieldRule?: FieldRule;
 }
 
 export interface FindWithPaginationParams<ModelType> {
   model: Model<ModelType>;
-  filters: Record<any, any>;
-  options: Record<any, any>;
+  filter: Record<string, unknown>;
+  options: QueryOptions;
 }
 
-export interface FindAndPaginateModel extends Model<any> {
+export interface FindAndPaginateModel extends Model<unknown> {
   findAndPaginate: <T>(
-    filters: FilterQuery<any>,
-    options: Record<any, any>
+    filter: FilterQuery<unknown>,
+    options: Record<string, unknown>
   ) => Promise<PaginatedResponse<T>>;
+}
+
+export interface AddFilterArguments {
+  filter: FilterQuery<unknown>;
+  location: string;
+  newFilter: FilterQuery<unknown>;
+  operator?: OperatorOptions | null;
+  arrayOptions?: ArrayFilterByOptions;
+  groups?: string[];
 }
 
 // Response

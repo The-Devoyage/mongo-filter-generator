@@ -1,11 +1,20 @@
-import { generateFilter } from './generate-filter';
+import { Convert } from './convert';
 import { FilterQuery, QueryOptions } from 'mongoose';
 import { GenerateMongoArguments } from '../types';
+import { Parse } from './parse';
+import { Modify } from './modify';
 
-export const GenerateMongo = (params: GenerateMongoArguments) => {
+/**
+ * Uses Field Filters and Field Config to generate Mongoose Filters and Options.
+ * @returns -  Mongoose FilterQuery<unknown> as `filter` and Mongoose QueryOptions as `options`.
+ **/
+
+export const GenerateMongo = <DocumentType>(
+  params: GenerateMongoArguments<DocumentType>
+) => {
   const { fieldFilters, fieldRules, config } = params;
 
-  const filter: FilterQuery<unknown> = {};
+  let filter: FilterQuery<DocumentType & { createdAt?: Date }> = {};
 
   const options: QueryOptions = {
     sort: { createdAt: 1 },
@@ -32,23 +41,55 @@ export const GenerateMongo = (params: GenerateMongoArguments) => {
   }
 
   // Generate Filters for Arrays of Filters and Single Filters
-  for (const location in fieldFilters) {
-    if (Array.isArray(fieldFilters[location])) {
-      const fieldFiltersArray: any = fieldFilters[location];
+  for (const rootLocation in fieldFilters) {
+    if (Array.isArray(fieldFilters[rootLocation])) {
+      const fieldFiltersArray = fieldFilters[rootLocation] as unknown[];
+
       for (const arrayFilter of fieldFiltersArray) {
-        generateFilter({
-          fieldFilter: arrayFilter,
+        const { fieldFilter, location } = Parse.parseFieldFilter(arrayFilter, [
+          rootLocation,
+        ]);
+
+        const fieldRule = fieldRules?.find(rule => rule.location === location);
+
+        const generated = Convert.toFilterQuery({
+          fieldFilter,
+          location,
+          fieldRule,
+        });
+        filter = Modify.Filter.addFilter({
           location,
           filter,
-          fieldRules,
+          newFilter: generated,
+          groups: fieldFilter.groups,
+          operator: fieldFilter.operator,
+          arrayOptions:
+            'arrayOptions' in fieldFilter
+              ? fieldFilter.arrayOptions
+              : undefined,
         });
       }
     } else {
-      generateFilter({
-        fieldFilter: fieldFilters[location],
+      const { fieldFilter, location } = Parse.parseFieldFilter(
+        fieldFilters[rootLocation] as Record<string, unknown>,
+        [rootLocation]
+      );
+
+      const fieldRule = fieldRules?.find(rule => rule.location === location);
+
+      const generated = Convert.toFilterQuery({
+        fieldFilter,
+        location,
+        fieldRule,
+      });
+      filter = Modify.Filter.addFilter({
         location,
         filter,
-        fieldRules,
+        newFilter: generated,
+        groups: fieldFilter.groups,
+        operator: fieldFilter.operator,
+        arrayOptions:
+          'arrayOptions' in fieldFilter ? fieldFilter.arrayOptions : undefined,
       });
     }
   }
@@ -56,11 +97,21 @@ export const GenerateMongo = (params: GenerateMongoArguments) => {
   // Handle FieldRules
   if (fieldRules?.length) {
     for (const fieldRule of fieldRules) {
-      generateFilter({
+      const generated = Convert.toFilterQuery({
         fieldFilter: fieldRule.fieldFilter,
         location: fieldRule.location.toString(),
+        fieldRule,
+      });
+      filter = Modify.Filter.addFilter({
+        location: fieldRule.location.toString(),
         filter,
-        fieldRules,
+        newFilter: generated,
+        groups: fieldRule.fieldFilter?.groups,
+        operator: fieldRule.fieldFilter?.operator,
+        arrayOptions:
+          fieldRule.fieldFilter && 'arrayOptions' in fieldRule.fieldFilter
+            ? fieldRule.fieldFilter.arrayOptions
+            : undefined,
       });
     }
   }
@@ -83,6 +134,6 @@ export const GenerateMongo = (params: GenerateMongoArguments) => {
     }
     return { filter, options };
   } else {
-    return { filter: {}, options };
+    return { filter: {} as FilterQuery<DocumentType>, options };
   }
 };

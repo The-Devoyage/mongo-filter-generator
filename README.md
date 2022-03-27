@@ -1,6 +1,6 @@
 # Mongo Filter Generator
 
-Find, filter, paginate with a few lines of code - The Mongo Filter Generator Package allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
+Find, filter, paginate with a few lines of code - The Mongo Filter Generator Library allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
 
 ## Install
 
@@ -24,31 +24,33 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg? Feel free to [Show Some Love\\\\\\\\\\\\\\\\\$\$](https://basetools.io/checkout/vyOL9ATx)
+Using mfg or think it's a cool library? Feel free to [Show Some Love\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\$\$](https://basetools.io/checkout/vyOL9ATx)
 
-## Highlights
+## Main Features
 
 ### Find and Paginate Method
 
-Add the find and paginate to any mongoose model to enabled filtered and paginated responses. Follow the setup guide below to add this method to the model.
+Add the find and paginate to any mongoose model to enabled filtered and paginated responses. Simple setup guide is below to add this method to the model with Mongoose Plugins.
 
 ```ts
 const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
 
-// Returns an object with the type PaginatedResponse
+// Returns an object with the type PaginatedResponse - Data is stored in the data property while information about pagination is stored in `stats`.
 export interface PaginatedResponse<ModelType> {
-  stats?: Stats;
-  data?: ModelType[];
+  stats: Stats;
+  data: ModelType[];
 }
 ```
 
 ### Generate Mongo
 
-Convert API requests to mongo filters and options. The GMF package will parse nested field or array filters from the request body or graphql args -- simply pass the whole object through.
+Convert API request body or graphql args to mongo filters and options. The MFG library will parse nested field or array filters from the request body or graphql args -- simply pass the whole object through.
+
+**_note_** - The `fieldFilters` object should be a `Partial` shape of the model/document of which you are querying.
 
 ```ts
-const { filter, options } = GenerateMongo({
-  fieldFilters: req.body,
+const { filter, options } = GenerateMongo<IUser>({
+  fieldFilters: req.body as Record<keyof IUser, unknown>,
   config: req.body.config,
 });
 
@@ -59,7 +61,7 @@ const paginatedResponse = await User.find(filter, options);
 
 The Mongo Filter Generator Package provides `fieldFilter` types that you can use to standardize incoming requests. Both Typescript and GraphQL types are included.
 
-For example, the `GetDogsInput` is typed with filters provided by the package, allowing the client to have a standardized query input throughout the entire API.
+For example, the `GetDogsInput` is typed with filters provided by the library, allowing the client to have a standardized query input with extended querying capabilities throughout the entire API.
 
 GraphQL Example
 
@@ -167,7 +169,7 @@ const response = await fetch('/api/accounts', {
 
 GraphQL:
 
-First, add the MFG `typeDefs` and `resolvers` to your schmea. Adding types allows you to use `FieldFilters`, `ArrayFilters`, `FilterConfig`, and `Stats` within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
+First, add the MFG `typeDefs` and `resolvers` to the schema. Doing so allows you to use `FieldFilter`, `FilterConfig`, and `Stats` (along with other provided types, see reference for more) within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
 
 ```ts
 import { GraphQL } from '@the-devoyage/mongo-filter-generator';
@@ -184,13 +186,13 @@ If you are using express, you can optionally create types for each request body.
 
 ### 2. Add Field or Array Filters To Your Custom Schema
 
-`FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request. Check the documentation for all provided filters and types that can be used to shape requests.
+`FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request which will enter the server. Check the reference below for all provided filters, inputs, types, and scalars that can be used to shape requests.
 
-Since you added the `GraphQL` types and resolvers to your schema, you do not need to re-declare them in the SDL.
+Since you added the `GraphQL` types and resolvers [step 1 above] to your schema, you do not need to re-declare them in the SDL.
 
 GraphQL Example
 
-You do not need to change anything other than the inputs, as such:
+Add Field Filters as Input Property Types
 
 ```ts
 import { gql } from 'apollo-server-core';
@@ -219,7 +221,7 @@ export const typeDefs = gql`
     users: StringArrayFieldFilter
     email: StringFieldFilter
     role: [IntFieldFilter] # Arrays Accepted
-    nested_details: NestedDetailsInput
+    nested_details: NestedDetailsInput # Nested Objects are Valid
   }
 
   input NestedDetailsInput {
@@ -276,11 +278,11 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filter, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo<IAccount>({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const accounts = await Account.find(filter, options);
+    const accounts = await Account.find<IAccount>(filter, options);
 
     return accounts;
   },
@@ -310,13 +312,13 @@ export interface GetDogsRequestBody {
 app.get('/', (req, res) => {
   const request: GetDogsRequestBody = req.body;
 
-  const { filter, options } = GenerateMongo({
+  const { filter, options } = GenerateMongo<IDog>({
     fieldFilters: request,
     config: request.config,
   });
 
   // Use filters to find the requested documents
-  const dogs = await Dog.find(filter);
+  const dogs = await Dog.find<IDog>(filter);
 
   res.json(dogs);
 });
@@ -332,11 +334,11 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filter, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo<IAccount>({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const paginatedAccounts = await FindAndPaginate({
+    const paginatedAccounts = await FindAndPaginate<IAccount>({
       filter,
       options,
       model: Account,
@@ -357,11 +359,14 @@ import { Account } from 'models';
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filter, options } = GenerateMongo({
+    const { filter, options } = GenerateMongo<IAccount>({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const paginatedAccounts = await Account.findAndPaginate(filter, options);
+    const paginatedAccounts = await Account.findAndPaginate<IAccount>(
+      filter,
+      options
+    );
 
     return paginatedAccounts;
   },
@@ -423,7 +428,7 @@ type User {
 }
 ```
 
-1. Construct a query with groups. This query will find users who have a favorite food of pizza or wings AND have a name of jim or john.
+1. Construct a query with groups. This query will find users who have a favorite food of pizza or wings AND have a name that contains (regex) jim or john.
 
 ```json
 {
@@ -462,7 +467,7 @@ type User {
 }
 ```
 
-2. The Generate Mongo Function will return filters that group the properties together by group name and and/or condition.
+2. The Generate Mongo Function will return filters that group the properties together by group name and and/or condition. In case you want to see what it looks like:
 
 ```json
 {
@@ -501,7 +506,7 @@ type User {
 
 ### Field Filters
 
-IntFieldFilter
+Used to type the properties of an incoming request.
 
 ```ts
 type IntFieldFilter = {
@@ -512,8 +517,6 @@ type IntFieldFilter = {
 };
 ```
 
-StringFieldFilter
-
 ```ts
 type StringFieldFilter = {
   filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
@@ -522,8 +525,6 @@ type StringFieldFilter = {
   groups: string[];
 };
 ```
-
-BooleanFieldFilter
 
 ```ts
 type BooleanFieldFilter = {
@@ -534,8 +535,6 @@ type BooleanFieldFilter = {
 };
 ```
 
-DateFieldFilter
-
 ```ts
 type DateFieldFilter = {
   date: Date;
@@ -544,8 +543,6 @@ type DateFieldFilter = {
   groups: string[];
 };
 ```
-
-### Array Filters
 
 ```ts
 type StringArrayFieldFilter = {
@@ -559,7 +556,7 @@ type StringArrayFieldFilter = {
 
 ### Filter Config
 
-Send with request to API, and apply to the config option within the `GenerateMongo` method.
+Used to type a configuration property of a request, to allow the client to control pagination. Can then be passed to the `GenerateMongo` method to convert it to Mongoose `QueryOptions`.
 
 ```ts
 export type FilterConfig = {
@@ -583,3 +580,72 @@ export type Stats = {
   cursor: Date;
 };
 ```
+
+### GenerateMongo
+
+Used to convert an object which contains field filters to mongo filters. Field filters may be in arrays or nested within the object.
+
+```ts
+const { filter, options } = GenerateMongo({ fieldFilters: req.body });
+```
+
+### FindAndPaginate
+
+Pass the generated filters and options returned from `GenerateMongo` to the FindAndPaginate function or the `model.findAndPaginate` method to add pagination to the query.
+
+Pass an object of type `FilterConfig` to `GenerateMongo` to produce the `options` object, enabling pagination options.
+
+```ts
+const PaginatedResponse = await Model.findAndPaginate<IModel>(filter, options);
+```
+
+### PaginatedResponse
+
+The return of `FindAndPaginate` - response with paginated and sorted data.
+
+```ts
+export interface PaginatedResponse<ModelType> {
+  stats: Stats;
+  data: ModelType[];
+}
+```
+
+### GraphQL
+
+Resolvers and Type Defs that must be added to the graphql schema in order to use the available field filters, types, and scalars.
+
+```ts
+import { GraphQL } from '@the-devoyage/mongo-filter-generator';
+
+const schema = buildFederatedSchema([
+  { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
+]);
+```
+
+### Parse
+
+A collection of helpers to parse data.
+
+- `Parse.parseFieldFilter` - Find field filters within an object starting from a specified location.
+
+### Validate
+
+A collection of helpers to validate field filters and other MFG objects.
+
+- `Validate.isFieldFilter`
+- `Validate.isStringFieldFilter`
+- `Validate.isBooleanFieldFilter`
+- `Validate.isIntFieldFilter`
+- `Validate.isDateFieldFilter`
+
+### Modify
+
+A collection of helpers to modify objects associated with MFG.
+
+- `Modify.addFilter` - Add a mongo query filter to an existing query filter object based on location, operator, groups, and array options.
+
+### Convert
+
+A collection of helpers to convert Field Filters to Mongo Query Filters.
+
+- `Convert.toFilterQuery` - Converts any field filter to a Mongo Query Filter. Applies additional rules if applicable.
