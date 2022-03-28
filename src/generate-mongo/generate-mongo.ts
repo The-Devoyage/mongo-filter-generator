@@ -57,17 +57,20 @@ export const GenerateMongo = <DocumentType>(
           location,
           fieldRule,
         });
-        filter = Modify.Filter.addFilter({
-          location,
-          filter,
-          newFilter: generated,
-          groups: fieldFilter.groups,
-          operator: fieldFilter.operator,
-          arrayOptions:
-            'arrayOptions' in fieldFilter
-              ? fieldFilter.arrayOptions
-              : undefined,
-        });
+
+        if (generated) {
+          filter = Modify.Filter.addFilter({
+            location,
+            filter,
+            newFilter: generated,
+            groups: fieldFilter?.groups,
+            operator: fieldFilter?.operator,
+            arrayOptions:
+              fieldFilter && 'arrayOptions' in fieldFilter
+                ? fieldFilter.arrayOptions
+                : undefined,
+          });
+        }
       }
     } else {
       const { fieldFilter, location } = Parse.parseFieldFilter(
@@ -82,15 +85,20 @@ export const GenerateMongo = <DocumentType>(
         location,
         fieldRule,
       });
-      filter = Modify.Filter.addFilter({
-        location,
-        filter,
-        newFilter: generated,
-        groups: fieldFilter.groups,
-        operator: fieldFilter.operator,
-        arrayOptions:
-          'arrayOptions' in fieldFilter ? fieldFilter.arrayOptions : undefined,
-      });
+
+      if (generated) {
+        filter = Modify.Filter.addFilter({
+          location,
+          filter,
+          newFilter: generated,
+          groups: fieldFilter?.groups,
+          operator: fieldFilter?.operator,
+          arrayOptions:
+            fieldFilter && 'arrayOptions' in fieldFilter
+              ? fieldFilter.arrayOptions
+              : undefined,
+        });
+      }
     }
   }
 
@@ -102,17 +110,20 @@ export const GenerateMongo = <DocumentType>(
         location: fieldRule.location.toString(),
         fieldRule,
       });
-      filter = Modify.Filter.addFilter({
-        location: fieldRule.location.toString(),
-        filter,
-        newFilter: generated,
-        groups: fieldRule.fieldFilter?.groups,
-        operator: fieldRule.fieldFilter?.operator,
-        arrayOptions:
-          fieldRule.fieldFilter && 'arrayOptions' in fieldRule.fieldFilter
-            ? fieldRule.fieldFilter.arrayOptions
-            : undefined,
-      });
+
+      if (generated) {
+        filter = Modify.Filter.addFilter({
+          location: fieldRule.location.toString(),
+          filter,
+          newFilter: generated,
+          groups: fieldRule.fieldFilter?.groups,
+          operator: fieldRule.fieldFilter?.operator,
+          arrayOptions:
+            fieldRule.fieldFilter && 'arrayOptions' in fieldRule.fieldFilter
+              ? fieldRule.fieldFilter.arrayOptions
+              : undefined,
+        });
+      }
     }
   }
 

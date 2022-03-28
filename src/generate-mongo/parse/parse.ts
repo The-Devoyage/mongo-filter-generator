@@ -5,10 +5,10 @@ export const parseFieldFilter = (
   object: unknown,
   location: string[]
 ): {
-  fieldFilter: FieldFilter;
+  fieldFilter: FieldFilter | undefined;
   location: string;
 } => {
-  const deepFilterSearch = (object: unknown): FieldFilter => {
+  const deepFilterSearch = (object: unknown): FieldFilter | undefined => {
     // If Valid Field Filter, Return, no need to update location.
     if (Validate.isValidFieldFilter(object)) {
       return object;
@@ -22,16 +22,12 @@ export const parseFieldFilter = (
         return deepFilterSearch(obj as Record<string, unknown>);
       }
     }
-    throw new Error('Could not find a field filter.');
+    return;
   };
 
   let fieldFilter: FieldFilter | undefined;
   if (typeof object === 'object') {
     fieldFilter = deepFilterSearch(object);
-  }
-
-  if (!fieldFilter) {
-    throw new Error(`Could not find a field filter for property ${location}.`);
   }
 
   return { fieldFilter, location: location.join('.') };

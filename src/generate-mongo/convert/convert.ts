@@ -4,7 +4,7 @@ import { GenerateFilterArguments } from '../../types';
 
 export const toFilterQuery = <Arg>(
   params: GenerateFilterArguments
-): FilterQuery<unknown> => {
+): FilterQuery<unknown> | undefined => {
   const { fieldRule } = params;
   let { fieldFilter, location } = params;
 
@@ -147,8 +147,6 @@ export const toFilterQuery = <Arg>(
       }
     }
   } else {
-    throw new Error(
-      'MFG ERROR: Failed to convert field filter to mongo filter query.'
-    );
+    return;
   }
 };
