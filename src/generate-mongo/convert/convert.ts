@@ -1,6 +1,7 @@
 import { Validate } from '../validate';
 import { FilterQuery, isValidObjectId } from 'mongoose';
 import { GenerateFilterArguments } from '../../types';
+import mongoose from 'mongoose';
 
 export const toFilterQuery = <Arg>(
   params: GenerateFilterArguments
@@ -40,7 +41,7 @@ export const toFilterQuery = <Arg>(
       }
 
       case 'OBJECTID': {
-        let search: string | string[] = [];
+        let search: mongoose.Types.ObjectId | mongoose.Types.ObjectId[] = [];
 
         if ('arrayOptions' in fieldFilter) {
           for (const str of fieldFilter.string as string[]) {
@@ -48,17 +49,19 @@ export const toFilterQuery = <Arg>(
             if (!isValidID) {
               throw new Error(`Invalid Mongo Object ID: ${str}.`);
             }
-            search.push(str);
+            const _id = new mongoose.Types.ObjectId(str);
+            search.push(_id);
           }
         } else {
           const isValidID = isValidObjectId(fieldFilter.string);
           if (!isValidID) {
             throw new Error(`Invalid Mongo Object ID: ${fieldFilter.string}.`);
           }
-          search = fieldFilter.string;
+          const _id = new mongoose.Types.ObjectId(fieldFilter.string as string);
+          search = _id;
         }
 
-        return search as FilterQuery<string>;
+        return search;
       }
     }
   } else if (Validate.isBooleanFieldFilter(fieldFilter)) {
