@@ -30,7 +30,7 @@ Using mfg or think it's a cool library? Feel free to [Show Some Love\\\\\\\\\\\\
 
 ### Find and Paginate Method
 
-Add the find and paginate to any mongoose model to enabled filtered and paginated responses. Simple setup guide is below to add this method to the model with Mongoose Plugins.
+Add the find and paginate to any mongoose model to enable filtered and paginated responses. Simple setup guide is below to add this method to the model with Mongoose Plugins.
 
 ```ts
 const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
