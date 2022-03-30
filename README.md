@@ -24,7 +24,7 @@ npm i @the-devoyage/mongo-filter-generator
 
 ## Show Some Love
 
-Using mfg or think it's a cool library? Feel free to [Show Some Love](https://basetools.io/checkout/vyOL9ATx)
+Using mfg or think it's a cool library? Feel free to [Show Some Love](https://basetools.io/checkout/vyOL9ATx)! Purchase grants instant github collaborator access for the life of the project.
 
 ## Main Features
 
