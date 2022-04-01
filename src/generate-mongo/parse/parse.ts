@@ -1,6 +1,36 @@
 import { Validate } from '../validate';
 import { FieldFilter } from '../../types';
 
+export const parseFieldFilters = (object: unknown, rootLocation: string) => {
+  const fieldFilters: { fieldFilter: FieldFilter; location: string }[] = [];
+  if (Validate.isValidFieldFilter(object)) {
+    fieldFilters.push({ fieldFilter: object, location: rootLocation });
+  }
+
+  for (const f in object as Record<string, unknown>) {
+    const parsed = parseFieldFilter((object as Record<string, unknown>)[f], [
+      rootLocation,
+      f,
+    ]);
+
+    if (parsed && !!parsed.fieldFilter) {
+      fieldFilters.push(
+        parsed as { fieldFilter: FieldFilter; location: string }
+      );
+    } else if (!parsed && typeof object === 'object') {
+      const nestedParsed = parseFieldFilters(
+        object,
+        [rootLocation, f].join('.')
+      );
+      for (const nestedFilter of nestedParsed) {
+        fieldFilters.push(nestedFilter);
+      }
+    }
+  }
+
+  return fieldFilters;
+};
+
 export const parseFieldFilter = (
   object: unknown,
   location: string[]
