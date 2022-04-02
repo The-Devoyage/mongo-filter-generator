@@ -1,5 +1,7 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
+  "name": "@the-devoyage/mongo-filter-generator",
+  "author": "Nick",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,17 +13,8 @@
     "node": ">=10"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "size": "size-limit",
-    "analyze": "size-limit --why"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
+    "start": "tsc -w && tsc-alias -w",
+    "build": "tsc && tsc-alias"
   },
   "prettier": {
     "printWidth": 80,
@@ -29,29 +22,10 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "@the-devoyage/mongo-filter-generator",
-  "author": "Nick",
-  "module": "dist/mongo-filter-generator.esm.js",
-  "size-limit": [
-    {
-      "path": "dist/mongo-filter-generator.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/mongo-filter-generator.esm.js",
-      "limit": "10 KB"
-    }
-  ],
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^7.0.5",
-    "@typescript-eslint/eslint-plugin": "^5.14.0",
-    "@typescript-eslint/parser": "^5.14.0",
     "eslint": "^8.10.0",
-    "husky": "^7.0.4",
-    "size-limit": "^7.0.5",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.3.1",
-    "typescript": "^3.9.10"
+    "tsc-alias": "^1.6.5",
+    "typescript": "^4.5.5"
   },
   "dependencies": {
     "apollo-server-core": "^3.5.0",
