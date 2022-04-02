@@ -644,8 +644,6 @@ A collection of helpers to modify objects associated with MFG.
 
 - `Modify.addFilter` - Add a mongo query filter to an existing query filter object based on location, operator, groups, and array options.
 
-### Convert
+### Generate 
 
-A collection of helpers to convert Field Filters to Mongo Query Filters.
-
-- `Convert.toFilterQuery` - Converts any field filter to a Mongo Query Filter. Applies additional rules if applicable.
+- `Generate.filterQuery` - Converts any field filter to a Mongo Query Filter. Applies additional rules if applicable.

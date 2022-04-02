@@ -3,7 +3,7 @@ import { FilterQuery, isValidObjectId } from 'mongoose';
 import { GenerateFilterArguments } from '../../types';
 import mongoose from 'mongoose';
 
-export const toFilterQuery = <Arg>(
+export const filterQuery = <Arg>(
   params: GenerateFilterArguments
 ): FilterQuery<unknown> | undefined => {
   const { fieldRule } = params;
