@@ -5,4 +5,4 @@ export * from './graphql';
 export * from './generate-mongo/validate';
 export * from './generate-mongo/parse';
 export * from './generate-mongo/modify';
-export * from './generate-mongo/convert';
+export * from './generate-mongo/generate';

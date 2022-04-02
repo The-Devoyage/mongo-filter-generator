@@ -1,4 +1,4 @@
-import { Convert } from './convert';
+import { Generate } from './generate';
 import { FilterQuery, QueryOptions } from 'mongoose';
 import { GenerateMongoArguments } from '../types';
 import { Parse } from './parse';
@@ -56,7 +56,7 @@ export const GenerateMongo = <DocumentType>(
             rule => rule.location === fl.location
           );
 
-          const generated = Convert.toFilterQuery({
+          const generated = Generate.filterQuery({
             fieldFilter: fl.fieldFilter,
             location: fl.location,
             fieldRule,
@@ -88,7 +88,7 @@ export const GenerateMongo = <DocumentType>(
           rule => rule.location === fl.location
         );
 
-        const generated = Convert.toFilterQuery({
+        const generated = Generate.filterQuery({
           fieldFilter: fl.fieldFilter,
           location: fl.location,
           fieldRule,
@@ -114,7 +114,7 @@ export const GenerateMongo = <DocumentType>(
   // Handle FieldRules
   if (fieldRules?.length) {
     for (const fieldRule of fieldRules) {
-      const generated = Convert.toFilterQuery({
+      const generated = Generate.filterQuery({
         fieldFilter: fieldRule.fieldFilter,
         location: fieldRule.location.toString(),
         fieldRule,
