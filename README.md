@@ -100,7 +100,7 @@ import {
   StringArrayFilter,
   IntFieldFilter,
   FilterConfig,
-} from '@the-devoyage/mongo-filter-generator';
+} from "@the-devoyage/mongo-filter-generator";
 
 export interface GetDogsRequestBody {
   _id?: StringFieldFilter;
@@ -138,10 +138,10 @@ const GET_ACCOUNTS = gql`
 const { data } = useQuery(GET_ACCOUNTS, {
   variables: {
     getAccountsInput: {
-      email: { filterBy: 'REGEX', string: 'nick', operator: 'AND' },
+      email: { filterBy: "REGEX", string: "nick", operator: "AND" },
       role: [
-        { filterBy: 'EQ', int: 5, operator: 'OR' },
-        { filterBy: 'LT', int: 2, operator: 'OR' },
+        { filterBy: "EQ", int: 5, operator: "OR" },
+        { filterBy: "LT", int: 2, operator: "OR" },
       ],
     },
   },
@@ -151,13 +151,13 @@ const { data } = useQuery(GET_ACCOUNTS, {
 REST Example
 
 ```ts
-const response = await fetch('/api/accounts', {
-  method: 'GET',
+const response = await fetch("/api/accounts", {
+  method: "GET",
   body: JSON.stringify({
-    email: { filterBy: 'REGEX', string: 'nick', operator: 'AND' },
+    email: { filterBy: "REGEX", string: "nick", operator: "AND" },
     role: [
-      { filterBy: 'EQ', int: 5, operator: 'OR' },
-      { filterBy: 'LT', int: 2, operator: 'OR' },
+      { filterBy: "EQ", int: 5, operator: "OR" },
+      { filterBy: "LT", int: 2, operator: "OR" },
     ],
   }),
 });
@@ -172,7 +172,7 @@ GraphQL:
 First, add the MFG `typeDefs` and `resolvers` to the schema. Doing so allows you to use `FieldFilter`, `FilterConfig`, and `Stats` (along with other provided types, see reference for more) within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
 
 ```ts
-import { GraphQL } from '@the-devoyage/mongo-filter-generator';
+import { GraphQL } from "@the-devoyage/mongo-filter-generator";
 
 const schema = buildFederatedSchema([
   { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
@@ -195,7 +195,7 @@ GraphQL Example
 Add Field Filters as Input Property Types
 
 ```ts
-import { gql } from 'apollo-server-core';
+import { gql } from "apollo-server-core";
 
 export const typeDefs = gql`
   type Account {
@@ -250,7 +250,7 @@ import {
   StringArrayFieldFilter,
   IntFieldFilter,
   FilterConfig,
-} from '@the-devoyage/mongo-filter-generator';
+} from "@the-devoyage/mongo-filter-generator";
 
 export interface GetDogsRequestBody {
   _id?: StringFieldFilter;
@@ -273,8 +273,8 @@ Graphql Example:
 
 ```ts
 // Resolvers.ts
-import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
-import { Account } from 'models';
+import { GenerateMongo } from "@the-devoyage/mongo-filter-generator";
+import { Account } from "models";
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
@@ -297,7 +297,7 @@ import {
   StringArrayFieldFilter,
   IntFieldFilter,
   FilterConfig,
-} from '@the-devoyage/mongo-filter-generator';
+} from "@the-devoyage/mongo-filter-generator";
 
 export interface GetDogsRequestBody {
   _id?: StringFieldFilter;
@@ -309,7 +309,7 @@ export interface GetDogsRequestBody {
   config?: FilterConfig;
 }
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   const request: GetDogsRequestBody = req.body;
 
   const { filter, options } = GenerateMongo<IDog>({
@@ -329,8 +329,8 @@ app.get('/', (req, res) => {
 Use the generated `filter` and `options`, from the `GenerateMongo` method, with the provided find and paginate function.
 
 ```ts
-import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
-import { Account } from 'models';
+import { GenerateMongo } from "@the-devoyage/mongo-filter-generator";
+import { Account } from "models";
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
@@ -354,8 +354,8 @@ or
 **Note - You must Enable the `findAndPaginate()` method with Mongoose Plugins for the following to execute. Instructions below.**
 
 ```ts
-import { GenerateMongo } from '@the-devoyage/mongo-filter-generator';
-import { Account } from 'models';
+import { GenerateMongo } from "@the-devoyage/mongo-filter-generator";
+import { Account } from "models";
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
@@ -379,19 +379,19 @@ Note - If this is done within the server/entry point, the plugin must be defined
 
 ```ts
 // entry-point.ts
-import mongoose from 'mongoose';
-import { findAndPaginatePlugin } from '@the-devoyage/mongo-filter-generator';
+import mongoose from "mongoose";
+import { findAndPaginatePlugin } from "@the-devoyage/mongo-filter-generator";
 mongoose.plugin(findAndPaginatePlugin);
-import { typeDefs, resolvers } from './schema';
+import { typeDefs, resolvers } from "./schema";
 ```
 
 Lastly, if you are using typescript, be sure to provide the `FindAndPaginateModel` definition to the model. This informs Typescript that the method is available.
 
 ```ts
 // UserModel.ts
-import { FindAndPaginateModel } from '@the-devoyage/mongo-filter-generator';
-import mongoose from 'mongoose';
-import { User as IUser } from 'types/generated';
+import { FindAndPaginateModel } from "@the-devoyage/mongo-filter-generator";
+import mongoose from "mongoose";
+import { User as IUser } from "types/generated";
 
 const Schema = mongoose.Schema;
 
@@ -405,7 +405,7 @@ const UserSchema = new Schema<IUser, FindAndPaginateModel>(
 );
 
 export const User = mongoose.model<IUser, FindAndPaginateModel>(
-  'User',
+  "User",
   UserSchema
 );
 ```
@@ -502,6 +502,39 @@ type User {
 }
 ```
 
+### 6. Field Rules
+
+Server side, Field Rules can be applied to `GenerateMongo` arguments in order to perform a variety of actions when creating filters.
+
+Actions:
+
+- "INITIAL" - Provide a default field filter for every operation. Client request may overwrite the filter with their own request.
+- "DISABLE" - Revoke client permission to query certain fields. If the client request includes field filters for the disabled field, an error will be thrown.
+- "COMBINE" - Combine the field filter provided within the field rule with the client's field filter.
+- "OVERRIDE" - A default value that can not be overridden. An error is thrown if a client tries to request filtering with this field.
+
+```ts
+const { filter, options } =
+  GenerateMongo <
+  IUser >
+  {
+    fieldFilters: args.getAllUsersInput,
+    config: args.getAllUsersInput.config,
+    fieldRules: [
+      {
+        location: "name",
+        fieldFilter: {
+          string: "Edmo",
+          filterBy: "REGEX",
+          operator: "OR",
+          groups: ["names.and"],
+        },
+        action: "COMBINE",
+      },
+    ],
+  };
+```
+
 ## Reference
 
 ### Field Filters
@@ -510,27 +543,27 @@ Used to type the properties of an incoming request.
 
 ```ts
 type IntFieldFilter = {
-  filterBy: 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
+  filterBy: "EQ" | "GT" | "GTE" | "LT" | "LTE" | "NE";
   int: number;
-  operator?: 'AND' | 'OR';
+  operator?: "AND" | "OR";
   groups: string[];
 };
 ```
 
 ```ts
 type StringFieldFilter = {
-  filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
+  filterBy: "MATCH" | "REGEX" | "OBJECTID";
   string: string;
-  operator?: 'AND' | 'OR';
+  operator?: "AND" | "OR";
   groups: string[];
 };
 ```
 
 ```ts
 type BooleanFieldFilter = {
-  filterBy: 'EQ' | 'NE';
+  filterBy: "EQ" | "NE";
   bool: Boolean;
-  operator?: 'AND' | 'OR';
+  operator?: "AND" | "OR";
   groups: string[];
 };
 ```
@@ -538,18 +571,18 @@ type BooleanFieldFilter = {
 ```ts
 type DateFieldFilter = {
   date: Date;
-  filterBy: 'EQ' | 'NE' | 'LT' | 'GT' | 'LTE' | 'GTE';
-  operator?: 'AND' | 'OR';
+  filterBy: "EQ" | "NE" | "LT" | "GT" | "LTE" | "GTE";
+  operator?: "AND" | "OR";
   groups: string[];
 };
 ```
 
 ```ts
 type StringArrayFieldFilter = {
-  filterBy: 'MATCH' | 'REGEX' | 'OBJECTID';
+  filterBy: "MATCH" | "REGEX" | "OBJECTID";
   string: string[];
-  arrayOptions: 'IN' | 'NIN';
-  operator?: 'AND' | 'OR';
+  arrayOptions: "IN" | "NIN";
+  operator?: "AND" | "OR";
   groups: string[];
 };
 ```
@@ -615,7 +648,7 @@ export interface PaginatedResponse<ModelType> {
 Resolvers and Type Defs that must be added to the graphql schema in order to use the available field filters, types, and scalars.
 
 ```ts
-import { GraphQL } from '@the-devoyage/mongo-filter-generator';
+import { GraphQL } from "@the-devoyage/mongo-filter-generator";
 
 const schema = buildFederatedSchema([
   { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
@@ -642,8 +675,9 @@ A collection of helpers to validate field filters and other MFG objects.
 
 A collection of helpers to modify objects associated with MFG.
 
-- `Modify.addFilter` - Add a mongo query filter to an existing query filter object based on location, operator, groups, and array options.
+- `Modify.Filter.addFilter` - Add a mongo query filter to an existing query filter object based on location, operator, groups, and array options.
+- `Modify.FieldFilter.applyFieldRule` - Applies field rule to field filter and returns updated field filter if rule applies. Updated field rules array is returned based on the rule type as well.
 
-### Generate 
+### Generate
 
 - `Generate.filterQuery` - Converts any field filter to a Mongo Query Filter. Applies additional rules if applicable.
