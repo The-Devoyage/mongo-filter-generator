@@ -3,23 +3,10 @@ import { FilterQuery, isValidObjectId } from 'mongoose';
 import { GenerateFilterArguments } from '../../types';
 import mongoose from 'mongoose';
 
-export const filterQuery = <Arg>(
+export const filterQuery = (
   params: GenerateFilterArguments
 ): FilterQuery<unknown> | undefined => {
-  const { fieldRule } = params;
-  let { fieldFilter, location } = params;
-
-  if (fieldRule) {
-    if (fieldRule) {
-      if (fieldRule.disabled && Object.keys(fieldFilter ?? {}).length) {
-        throw new Error(`MFG ERROR: Access to property "${location}" denied.`);
-      }
-      if (fieldRule.fieldFilter) {
-        fieldFilter = fieldRule.fieldFilter;
-        location = fieldRule.location as Extract<keyof Arg, string>;
-      }
-    }
-  }
+  let { fieldFilter } = params;
 
   // Convert to Mongo Filters
   if (Validate.isStringFieldFilter(fieldFilter)) {
@@ -153,3 +140,4 @@ export const filterQuery = <Arg>(
     return;
   }
 };
+

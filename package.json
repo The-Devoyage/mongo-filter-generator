@@ -1,5 +1,5 @@
 {
-  "version": "0.3.5",
+  "version": "0.3.6",
   "name": "@the-devoyage/mongo-filter-generator",
   "author": "Nick",
   "license": "MIT",
@@ -15,12 +15,6 @@
   "scripts": {
     "start": "tsc -w && tsc-alias -w",
     "build": "tsc && tsc-alias"
-  },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
   },
   "devDependencies": {
     "eslint": "^8.10.0",
