@@ -12,7 +12,8 @@ import { Modify } from './modify';
 export const GenerateMongo = <DocumentType>(
   params: GenerateMongoArguments<DocumentType>
 ) => {
-  const { fieldFilters, fieldRules, config } = params;
+  const { fieldFilters, config } = params;
+  let { fieldRules } = params;
 
   let filter: FilterQuery<DocumentType & { createdAt?: Date }> = {};
 
@@ -56,10 +57,17 @@ export const GenerateMongo = <DocumentType>(
             rule => rule.location === fl.location
           );
 
+          if (fieldRule) {
+            const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
+            fieldRules = ruleApplied.updatedFieldRules;
+
+            if (ruleApplied?.fieldFilter) {
+              fl.fieldFilter = ruleApplied.fieldFilter
+            }
+          }
+
           const generated = Generate.filterQuery({
             fieldFilter: fl.fieldFilter,
-            location: fl.location,
-            fieldRule,
           });
 
           if (generated) {
@@ -83,15 +91,22 @@ export const GenerateMongo = <DocumentType>(
         rootLocation
       );
 
-      for (const fl of filtersAndLocations) {
+      for (let fl of filtersAndLocations) {
         const fieldRule = fieldRules?.find(
           rule => rule.location === fl.location
         );
 
+        if (fieldRule) {
+          const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
+          fieldRules = ruleApplied.updatedFieldRules;
+
+          if (ruleApplied.fieldFilter) {
+            fl.fieldFilter = ruleApplied.fieldFilter
+          }
+        }
+
         const generated = Generate.filterQuery({
           fieldFilter: fl.fieldFilter,
-          location: fl.location,
-          fieldRule,
         });
 
         if (generated) {
@@ -116,13 +131,11 @@ export const GenerateMongo = <DocumentType>(
     for (const fieldRule of fieldRules) {
       const generated = Generate.filterQuery({
         fieldFilter: fieldRule.fieldFilter,
-        location: fieldRule.location.toString(),
-        fieldRule,
       });
 
       if (generated) {
         filter = Modify.Filter.addFilter({
-          location: fieldRule.location.toString(),
+          location: fieldRule.location,
           filter,
           newFilter: generated,
           groups: fieldRule.fieldFilter?.groups,

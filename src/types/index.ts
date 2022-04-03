@@ -28,7 +28,7 @@ export type Pagination = {
 export interface FieldRule {
   location: string;
   fieldFilter?: FieldFilter;
-  disabled?: boolean;
+  action: "DISABLE" | "OVERRIDE" | "COMBINE" | "INITIAL"
 }
 
 // Filters
@@ -91,8 +91,6 @@ export interface GenerateMongoArguments<DocumentType> {
 
 export interface GenerateFilterArguments {
   fieldFilter?: FieldFilter;
-  location: string;
-  fieldRule?: FieldRule;
 }
 
 export interface FindWithPaginationParams<ModelType> {
