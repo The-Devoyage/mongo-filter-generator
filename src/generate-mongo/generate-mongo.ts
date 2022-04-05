@@ -43,85 +43,41 @@ export const GenerateMongo = <DocumentType>(
 
   // Generate Filters for Arrays of Filters and Single Filters
   for (const rootLocation in fieldFilters) {
-    if (Array.isArray(fieldFilters[rootLocation])) {
-      const fieldFiltersArray = fieldFilters[rootLocation] as unknown[];
+    const filtersAndLocations = Parse.parseFieldFilters(
+      fieldFilters[rootLocation] as Record<string, unknown>,
+      rootLocation
+    );
 
-      for (const arrayFilter of fieldFiltersArray) {
-        const filtersAndLocations = Parse.parseFieldFilters(
-          arrayFilter,
-          rootLocation
-        );
-
-        for (const fl of filtersAndLocations) {
-          const fieldRule = fieldRules?.find(
-            rule => rule.location === fl.location
-          );
-
-          if (fieldRule) {
-            const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
-            fieldRules = ruleApplied.updatedFieldRules;
-
-            if (ruleApplied?.fieldFilter) {
-              fl.fieldFilter = ruleApplied.fieldFilter
-            }
-          }
-
-          const generated = Generate.filterQuery({
-            fieldFilter: fl.fieldFilter,
-          });
-
-          if (generated) {
-            filter = Modify.Filter.addFilter({
-              location: fl.location,
-              filter,
-              newFilter: generated,
-              groups: fl.fieldFilter?.groups,
-              operator: fl.fieldFilter?.operator,
-              arrayOptions:
-                fl.fieldFilter && 'arrayOptions' in fl.fieldFilter
-                  ? fl.fieldFilter.arrayOptions
-                  : undefined,
-            });
-          }
-        }
-      }
-    } else {
-      const filtersAndLocations = Parse.parseFieldFilters(
-        fieldFilters[rootLocation] as Record<string, unknown>,
-        rootLocation
+    for (let fl of filtersAndLocations) {
+      const fieldRule = fieldRules?.find(
+        rule => rule.location === fl.location
       );
 
-      for (let fl of filtersAndLocations) {
-        const fieldRule = fieldRules?.find(
-          rule => rule.location === fl.location
-        );
+      if (fieldRule) {
+        const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
+        fieldRules = ruleApplied.updatedFieldRules;
 
-        if (fieldRule) {
-          const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
-          fieldRules = ruleApplied.updatedFieldRules;
-
-          if (ruleApplied.fieldFilter) {
-            fl.fieldFilter = ruleApplied.fieldFilter
-          }
+        if (ruleApplied.fieldFilter) {
+          fl.fieldFilter = ruleApplied.fieldFilter
         }
+      }
 
-        const generated = Generate.filterQuery({
-          fieldFilter: fl.fieldFilter,
+      const generated = Generate.filterQuery({
+        fieldFilter: fl.fieldFilter,
+      });
+
+      if (generated) {
+        filter = Modify.Filter.addFilter({
+          location: fl.location,
+          filter,
+          newFilter: generated,
+          groups: fl.fieldFilter?.groups,
+          operator: fl.fieldFilter?.operator,
+          arrayOptions:
+            fl.fieldFilter && 'arrayOptions' in fl.fieldFilter
+              ? fl.fieldFilter.arrayOptions
+              : undefined,
         });
-
-        if (generated) {
-          filter = Modify.Filter.addFilter({
-            location: fl.location,
-            filter,
-            newFilter: generated,
-            groups: fl.fieldFilter?.groups,
-            operator: fl.fieldFilter?.operator,
-            arrayOptions:
-              fl.fieldFilter && 'arrayOptions' in fl.fieldFilter
-                ? fl.fieldFilter.arrayOptions
-                : undefined,
-          });
-        }
       }
     }
   }
