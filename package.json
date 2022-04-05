@@ -1,5 +1,5 @@
 {
-  "version": "0.3.6",
+  "version": "0.3.7",
   "name": "@the-devoyage/mongo-filter-generator",
   "author": "Nick",
   "license": "MIT",
@@ -13,12 +13,13 @@
     "node": ">=10"
   },
   "scripts": {
-    "start": "tsc -w && tsc-alias -w",
-    "build": "tsc && tsc-alias"
+    "start": "tsc -w",
+    "build": "tsc"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.18.0",
+    "@typescript-eslint/parser": "^5.18.0",
     "eslint": "^8.10.0",
-    "tsc-alias": "^1.6.5",
     "typescript": "^4.5.5"
   },
   "dependencies": {
