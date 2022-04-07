@@ -229,153 +229,139 @@ export const transformGroups = (
         if (group.group) {
           for (const groupAndOr in group) {
             if (groupAndOr === "$and" || groupAndOr === "$or") {
-              if (group[groupAndOr].length >= 2) {
-                const transformedGroupAndOr: FilterQuery<unknown>[] = [];
+              const transformedGroupAndOr: FilterQuery<unknown>[] = [];
 
-                for (const queryFilter of group[groupAndOr]) {
-                  const location = Object.keys(queryFilter)[0];
-                  const splitLocation = location.split(".");
+              for (const queryFilter of group[groupAndOr]) {
+                const location = Object.keys(queryFilter)[0];
+                const splitLocation = location.split(".");
 
-                  if (splitLocation.length === 1) {
-                    transformedGroupAndOr.push(queryFilter);
-                  } else {
-                    const newFilter = splitLocation
-                      .reverse()
-                      .reduce((res, key, idx) => {
-                        if (idx !== 0) {
-                          return { [key]: { $elemMatch: { $and: [res] } } };
-                        } else {
-                          return { [key]: res };
-                        }
-                      }, queryFilter[location]);
-
-                    const index = transformedGroupAndOr.findIndex(
-                      (fil: any) => {
-                        const firstKey = Object.keys(fil)[0];
-                        return (
-                          firstKey === splitLocation[splitLocation.length - 1]
-                        );
+                if (splitLocation.length === 1) {
+                  transformedGroupAndOr.push(queryFilter);
+                } else {
+                  const newFilter = splitLocation
+                    .reverse()
+                    .reduce((res, key, idx) => {
+                      if (idx !== 0) {
+                        return { [key]: { $elemMatch: { $and: [res] } } };
+                      } else {
+                        return { [key]: res };
                       }
-                    );
+                    }, queryFilter[location]);
 
-                    if (index > -1) {
-                      for (let filter of transformedGroupAndOr) {
-                        if (
-                          Object.keys(filter)[0] ===
-                          splitLocation[splitLocation.length - 1]
-                        ) {
-                          const existingFilter = transformedGroupAndOr[index];
+                  const index = transformedGroupAndOr.findIndex((fil: any) => {
+                    const firstKey = Object.keys(fil)[0];
+                    return firstKey === splitLocation[splitLocation.length - 1];
+                  });
 
-                          const incomingFilter = newFilter;
+                  if (index > -1) {
+                    for (let filter of transformedGroupAndOr) {
+                      if (
+                        Object.keys(filter)[0] ===
+                        splitLocation[splitLocation.length - 1]
+                      ) {
+                        const existingFilter = transformedGroupAndOr[index];
 
-                          const isObject = (item: any) => {
-                            return (
-                              item &&
-                              typeof item === "object" &&
-                              !Array.isArray(item)
-                            );
-                          };
+                        const incomingFilter = newFilter;
 
-                          const mergeDeep = (
-                            existing: Record<string, any>,
-                            incoming: Record<string, any>
-                          ) => {
-                            if (isObject(incoming)) {
-                              for (const root in incoming) {
-                                if (isObject(incoming[root])) {
-                                  if (incoming[root]["$elemMatch"]["$and"]) {
-                                    const combinedFilters: Record<
-                                      string,
-                                      any
-                                    >[] = [];
+                        const isObject = (item: any) => {
+                          return (
+                            item &&
+                            typeof item === "object" &&
+                            !Array.isArray(item)
+                          );
+                        };
 
-                                    if (existing[root]["$elemMatch"]["$and"]) {
-                                      for (const filter of existing[root][
-                                        "$elemMatch"
-                                      ]["$and"]) {
-                                        combinedFilters.push(filter);
-                                      }
-                                    }
+                        const mergeDeep = (
+                          existing: Record<string, any>,
+                          incoming: Record<string, any>
+                        ) => {
+                          if (isObject(incoming)) {
+                            for (const root in incoming) {
+                              if (isObject(incoming[root])) {
+                                if (incoming[root]["$elemMatch"]["$and"]) {
+                                  const combinedFilters: Record<string, any>[] =
+                                    [];
 
-                                    for (const filter of incoming[root][
+                                  if (existing[root]["$elemMatch"]["$and"]) {
+                                    for (const filter of existing[root][
                                       "$elemMatch"
                                     ]["$and"]) {
-                                      if (
-                                        !filter[Object.keys(filter)[0]][
-                                          "$elemMatch"
-                                        ]
-                                      ) {
-                                        combinedFilters.push(filter);
-                                      } else {
-                                        if (combinedFilters.length) {
-                                          let existingKey = false;
-                                          for (
-                                            let i = 0;
-                                            i < combinedFilters.length;
-                                            i++
-                                          ) {
-                                            const key = Object.keys(
-                                              combinedFilters[i]
-                                            )[0];
+                                      combinedFilters.push(filter);
+                                    }
+                                  }
 
-                                            if (
-                                              key === Object.keys(filter)[0]
-                                            ) {
-                                              existingKey = true;
-                                              mergeDeep(
-                                                combinedFilters[i],
-                                                filter
-                                              );
-                                            }
+                                  for (const filter of incoming[root][
+                                    "$elemMatch"
+                                  ]["$and"]) {
+                                    if (
+                                      !filter[Object.keys(filter)[0]][
+                                        "$elemMatch"
+                                      ]
+                                    ) {
+                                      combinedFilters.push(filter);
+                                    } else {
+                                      if (combinedFilters.length) {
+                                        let existingKey = false;
+                                        for (
+                                          let i = 0;
+                                          i < combinedFilters.length;
+                                          i++
+                                        ) {
+                                          const key = Object.keys(
+                                            combinedFilters[i]
+                                          )[0];
+
+                                          if (key === Object.keys(filter)[0]) {
+                                            existingKey = true;
+                                            mergeDeep(
+                                              combinedFilters[i],
+                                              filter
+                                            );
                                           }
-                                          if (!existingKey) {
-                                            combinedFilters.push(filter);
-                                          }
-                                        } else {
+                                        }
+                                        if (!existingKey) {
                                           combinedFilters.push(filter);
                                         }
+                                      } else {
+                                        combinedFilters.push(filter);
                                       }
                                     }
-
-                                    existing[root] = {
-                                      $elemMatch: {
-                                        //...existing[root]["$elemMatch"],
-                                        $and: combinedFilters,
-                                      },
-                                    };
                                   }
+
+                                  existing[root] = {
+                                    $elemMatch: {
+                                      //...existing[root]["$elemMatch"],
+                                      $and: combinedFilters,
+                                    },
+                                  };
                                 }
                               }
                             }
-                            return existing;
-                          };
+                          }
+                          return existing;
+                        };
 
-                          const combined = mergeDeep(
-                            existingFilter,
-                            incomingFilter
-                          );
+                        const combined = mergeDeep(
+                          existingFilter,
+                          incomingFilter
+                        );
 
-                          transformedGroupAndOr[index] = combined;
-                        }
+                        transformedGroupAndOr[index] = combined;
                       }
-                    } else {
-                      transformedGroupAndOr.push(newFilter);
                     }
+                  } else {
+                    transformedGroupAndOr.push(newFilter);
                   }
                 }
-                const groupIndex = filter[rootAndOr].findIndex(
-                  (g: FilterQuery<unknown>) => g.group === group.group
-                );
-
-                filter[rootAndOr][groupIndex] = {
-                  ...filter[rootAndOr][groupIndex],
-                  [groupAndOr]: transformedGroupAndOr,
-                };
-              } else {
-                throw new Error(
-                  "MFG Error: Invalid group length. Groups must contain more than query."
-                );
               }
+              const groupIndex = filter[rootAndOr].findIndex(
+                (g: FilterQuery<unknown>) => g.group === group.group
+              );
+
+              filter[rootAndOr][groupIndex] = {
+                ...filter[rootAndOr][groupIndex],
+                [groupAndOr]: transformedGroupAndOr,
+              };
             }
           }
         }
