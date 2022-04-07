@@ -1,8 +1,8 @@
-import { Generate } from './generate';
-import { FilterQuery, QueryOptions } from 'mongoose';
-import { GenerateMongoArguments } from '../types';
-import { Parse } from './parse';
-import { Modify } from './modify';
+import { Generate } from "./generate";
+import { FilterQuery, QueryOptions } from "mongoose";
+import { GenerateMongoArguments } from "../types";
+import { Parse } from "./parse";
+import { Modify } from "./modify";
 
 /**
  * Uses Field Filters and Field Config to generate Mongoose Filters and Options.
@@ -25,18 +25,18 @@ export const GenerateMongo = <DocumentType>(
   // Handle Pagination
   if (config?.pagination) {
     if (config.pagination.createdAt) {
-      filter['createdAt'] = {
-        [config.pagination.reverse ? '$lt' : '$gt']: new Date(
+      filter["createdAt"] = {
+        [config.pagination.reverse ? "$lt" : "$gt"]: new Date(
           config.pagination.createdAt
         ),
       };
     }
-    if ('reverse' in config.pagination) {
+    if ("reverse" in config.pagination) {
       options.sort = {
         createdAt: config.pagination.reverse ? -1 : 1,
       };
     }
-    if ('limit' in config.pagination) {
+    if ("limit" in config.pagination) {
       options.limit = config.pagination.limit ?? 4;
     }
   }
@@ -50,15 +50,19 @@ export const GenerateMongo = <DocumentType>(
 
     for (let fl of filtersAndLocations) {
       const fieldRule = fieldRules?.find(
-        rule => rule.location === fl.location
+        (rule) => rule.location === fl.location
       );
 
       if (fieldRule) {
-        const ruleApplied = Modify.FieldFilter.applyFieldRule(fieldRule, fl.fieldFilter, fieldRules ?? [])
+        const ruleApplied = Modify.FieldFilter.applyFieldRule(
+          fieldRule,
+          fl.fieldFilter,
+          fieldRules ?? []
+        );
         fieldRules = ruleApplied.updatedFieldRules;
 
         if (ruleApplied.fieldFilter) {
-          fl.fieldFilter = ruleApplied.fieldFilter
+          fl.fieldFilter = ruleApplied.fieldFilter;
         }
       }
 
@@ -74,7 +78,7 @@ export const GenerateMongo = <DocumentType>(
           groups: fl.fieldFilter?.groups,
           operator: fl.fieldFilter?.operator,
           arrayOptions:
-            fl.fieldFilter && 'arrayOptions' in fl.fieldFilter
+            fl.fieldFilter && "arrayOptions" in fl.fieldFilter
               ? fl.fieldFilter.arrayOptions
               : undefined,
         });
@@ -97,7 +101,7 @@ export const GenerateMongo = <DocumentType>(
           groups: fieldRule.fieldFilter?.groups,
           operator: fieldRule.fieldFilter?.operator,
           arrayOptions:
-            fieldRule.fieldFilter && 'arrayOptions' in fieldRule.fieldFilter
+            fieldRule.fieldFilter && "arrayOptions" in fieldRule.fieldFilter
               ? fieldRule.fieldFilter.arrayOptions
               : undefined,
         });
@@ -107,20 +111,7 @@ export const GenerateMongo = <DocumentType>(
 
   // Return Filters and Options
   if (Object.keys(filter).length) {
-    if (filter['$or']) {
-      for (const group of filter['$or']) {
-        if ('group' in group) {
-          delete group.group;
-        }
-      }
-    }
-    if (filter['$and']) {
-      for (const group of filter['$and']) {
-        if ('group' in group) {
-          delete group.group;
-        }
-      }
-    }
+    filter = Modify.Filter.transformGroups(filter);
     return { filter, options };
   } else {
     return { filter: {} as FilterQuery<DocumentType>, options };

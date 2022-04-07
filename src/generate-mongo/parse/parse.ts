@@ -25,7 +25,7 @@ export const parseFieldFilters = (
 
   if (typeof object === "object" && object !== null && !Array.isArray(object)) {
     for (const property in object) {
-      const objectProperty = (object as any)[property];
+      const objectProperty = (object as Record<string, unknown>)[property];
 
       if (
         typeof objectProperty === "object" &&
