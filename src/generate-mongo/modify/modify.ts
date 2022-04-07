@@ -223,25 +223,23 @@ const applyFieldRule = (
 export const transformGroups = (
   filter: FilterQuery<unknown>
 ): FilterQuery<unknown> => {
-  for (const rootOperator in filter) {
-    if (filter[rootOperator] && filter[rootOperator].length) {
-      for (const group of filter[rootOperator]) {
+  for (const rootAndOr in filter) {
+    if (filter[rootAndOr] && filter[rootAndOr].length) {
+      for (const group of filter[rootAndOr]) {
         if (group.group) {
-          for (const groupOperator in group) {
-            if (groupOperator === "$and" || groupOperator === "$or") {
-              if (group[groupOperator].length >= 2) {
-                const transformedGroupOperatorArray: FilterQuery<unknown>[] =
-                  [];
+          for (const groupAndOr in group) {
+            if (groupAndOr === "$and" || groupAndOr === "$or") {
+              if (group[groupAndOr].length >= 2) {
+                const transformedGroupAndOr: FilterQuery<unknown>[] = [];
 
-                for (const filterQuery of group[groupOperator]) {
-                  const location = Object.keys(filterQuery)[0];
+                for (const queryFilter of group[groupAndOr]) {
+                  const location = Object.keys(queryFilter)[0];
                   const splitLocation = location.split(".");
-                  const rootKey = splitLocation[splitLocation.length - 1];
 
                   if (splitLocation.length === 1) {
-                    transformedGroupOperatorArray.push(filterQuery);
+                    transformedGroupAndOr.push(queryFilter);
                   } else {
-                    const incomingFilterQuery = splitLocation
+                    const newFilter = splitLocation
                       .reverse()
                       .reduce((res, key, idx) => {
                         if (idx !== 0) {
@@ -249,20 +247,26 @@ export const transformGroups = (
                         } else {
                           return { [key]: res };
                         }
-                      }, filterQuery[location]);
+                      }, queryFilter[location]);
 
-                    const index = transformedGroupOperatorArray.findIndex(
+                    const index = transformedGroupAndOr.findIndex(
                       (fil: any) => {
                         const firstKey = Object.keys(fil)[0];
-                        return firstKey === rootKey;
+                        return (
+                          firstKey === splitLocation[splitLocation.length - 1]
+                        );
                       }
                     );
 
                     if (index > -1) {
-                      for (let filter of transformedGroupOperatorArray) {
-                        if (Object.keys(filter)[0] === rootKey) {
-                          const existingFilterQuery =
-                            transformedGroupOperatorArray[index];
+                      for (let filter of transformedGroupAndOr) {
+                        if (
+                          Object.keys(filter)[0] ===
+                          splitLocation[splitLocation.length - 1]
+                        ) {
+                          const existingFilter = transformedGroupAndOr[index];
+
+                          const incomingFilter = newFilter;
 
                           const isObject = (item: any) => {
                             return (
@@ -293,46 +297,49 @@ export const transformGroups = (
                                       }
                                     }
 
-                                    for (const fq of incoming[root][
+                                    for (const filter of incoming[root][
                                       "$elemMatch"
                                     ]["$and"]) {
                                       if (
-                                        !fq[Object.keys(fq)[0]]["$elemMatch"]
+                                        !filter[Object.keys(filter)[0]][
+                                          "$elemMatch"
+                                        ]
                                       ) {
-                                        combinedFilters.push(fq);
+                                        combinedFilters.push(filter);
                                       } else {
                                         if (combinedFilters.length) {
                                           let existingKey = false;
-
                                           for (
                                             let i = 0;
                                             i < combinedFilters.length;
                                             i++
                                           ) {
-                                            const firstCombinedFilterKey =
-                                              Object.keys(
-                                                combinedFilters[i]
-                                              )[0];
+                                            const key = Object.keys(
+                                              combinedFilters[i]
+                                            )[0];
 
                                             if (
-                                              firstCombinedFilterKey ===
-                                              Object.keys(fq)[0]
+                                              key === Object.keys(filter)[0]
                                             ) {
                                               existingKey = true;
-                                              mergeDeep(combinedFilters[i], fq);
+                                              mergeDeep(
+                                                combinedFilters[i],
+                                                filter
+                                              );
                                             }
                                           }
                                           if (!existingKey) {
-                                            combinedFilters.push(fq);
+                                            combinedFilters.push(filter);
                                           }
                                         } else {
-                                          combinedFilters.push(fq);
+                                          combinedFilters.push(filter);
                                         }
                                       }
                                     }
 
                                     existing[root] = {
                                       $elemMatch: {
+                                        //...existing[root]["$elemMatch"],
                                         $and: combinedFilters,
                                       },
                                     };
@@ -344,25 +351,25 @@ export const transformGroups = (
                           };
 
                           const combined = mergeDeep(
-                            existingFilterQuery,
-                            incomingFilterQuery
+                            existingFilter,
+                            incomingFilter
                           );
 
-                          transformedGroupOperatorArray[index] = combined;
+                          transformedGroupAndOr[index] = combined;
                         }
                       }
                     } else {
-                      transformedGroupOperatorArray.push(incomingFilterQuery);
+                      transformedGroupAndOr.push(newFilter);
                     }
                   }
                 }
-                const groupIndex = filter[rootOperator].findIndex(
+                const groupIndex = filter[rootAndOr].findIndex(
                   (g: FilterQuery<unknown>) => g.group === group.group
                 );
 
-                filter[rootOperator][groupIndex] = {
-                  ...filter[rootOperator][groupIndex],
-                  [groupOperator]: transformedGroupOperatorArray,
+                filter[rootAndOr][groupIndex] = {
+                  ...filter[rootAndOr][groupIndex],
+                  [groupAndOr]: transformedGroupAndOr,
                 };
               } else {
                 throw new Error(
