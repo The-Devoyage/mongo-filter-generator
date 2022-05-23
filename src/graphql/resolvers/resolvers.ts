@@ -1,7 +1,3 @@
-import { GraphQLObjectID } from './mongo-id';
-import { DateTimeScalar } from 'graphql-date-scalars';
+import { resolvers as graphqlScalarResolvers } from "graphql-scalars";
 
-export const resolvers = {
-  GraphQLObjectID,
-  DateTimeScalar,
-};
+export const resolvers = { ...graphqlScalarResolvers };
