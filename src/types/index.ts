@@ -1,4 +1,4 @@
-import { Model, FilterQuery, ObjectId, QueryOptions } from 'mongoose';
+import { Model, FilterQuery, ObjectId, QueryOptions } from "mongoose";
 
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -17,18 +17,18 @@ export type FilterConfig = {
   pagination?: Pagination | InputMaybe<Pagination>;
 };
 
-export type OperatorOptions = 'AND' | 'OR';
+export type OperatorOptions = "AND" | "OR";
 
 export type Pagination = {
   limit?: InputMaybe<number> | number;
   reverse?: boolean | InputMaybe<boolean>;
-  createdAt?: Scalars['DateTime'];
+  createdAt?: InputMaybe<Date> | Date;
 };
 
 export interface FieldRule {
   location: string;
   fieldFilter?: FieldFilter;
-  action: "DISABLE" | "OVERRIDE" | "COMBINE" | "INITIAL"
+  action: "DISABLE" | "OVERRIDE" | "COMBINE" | "INITIAL";
 }
 
 // Filters
@@ -76,11 +76,11 @@ export interface StringArrayFieldFilter extends StringFilterBase {
 }
 
 // FilterBy Options
-export type IntFilterByOptions = 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'NE';
-export type StringFilterByOptions = 'MATCH' | 'OBJECTID' | 'REGEX';
-export type BooleanFilterByOptions = 'EQ' | 'NE';
-export type DateFilterByOptions = 'EQ' | 'NE' | 'GT' | 'LT' | 'GTE' | 'LTE';
-export type ArrayFilterByOptions = 'IN' | 'NIN';
+export type IntFilterByOptions = "EQ" | "GT" | "GTE" | "LT" | "LTE" | "NE";
+export type StringFilterByOptions = "MATCH" | "OBJECTID" | "REGEX";
+export type BooleanFilterByOptions = "EQ" | "NE";
+export type DateFilterByOptions = "EQ" | "NE" | "GT" | "LT" | "GTE" | "LTE";
+export type ArrayFilterByOptions = "IN" | "NIN";
 
 // Arguments
 export interface GenerateMongoArguments<DocumentType> {
@@ -97,12 +97,18 @@ export interface FindWithPaginationParams<ModelType> {
   model: Model<ModelType>;
   filter: Record<string, unknown>;
   options: QueryOptions;
+  mfgOptions?: MfgOptions;
+}
+
+export interface MfgOptions {
+  history?: { filter: HistoryFilterInput };
 }
 
 export interface FindAndPaginateModel extends Model<unknown> {
   findAndPaginate: <T>(
     filter: FilterQuery<unknown>,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
+    mfgOptions?: MfgOptions
   ) => Promise<PaginatedResponse<T>>;
 }
 
@@ -117,10 +123,32 @@ export interface AddFilterArguments {
 
 // Response
 export type Stats = {
-  remaining?: Maybe<Scalars['Int']> | number;
-  total?: Maybe<Scalars['Int']> | number;
-  page?: Maybe<Scalars['Int']> | number;
-  cursor?: Maybe<Scalars['DateTime']> | Date;
+  remaining?: Maybe<Scalars["Int"]> | number;
+  total?: Maybe<Scalars["Int"]> | number;
+  page?: Maybe<Scalars["Int"]> | number;
+  cursor?: Maybe<Scalars["DateTime"]> | Date;
+  history?: HistoricStats[];
+};
+
+export type HistoryFilterIntervalEnum =
+  | "YEAR"
+  | "DAY_OF_YEAR"
+  | "MONTH"
+  | "DAY_OF_MONTH"
+  | "WEEK"
+  | "DAY_OF_WEEK"
+  | "HOUR"
+  | "MINUTES"
+  | "SECONDS"
+  | "MILLISECONDS";
+
+export type HistoryFilterInput = {
+  interval: HistoryFilterIntervalEnum[];
+};
+
+export type HistoricStats = {
+  total: Maybe<Scalars["Int"]> | number;
+  _id: Record<HistoryFilterIntervalEnum, number>;
 };
 
 export interface PaginatedResponse<ModelType> {
