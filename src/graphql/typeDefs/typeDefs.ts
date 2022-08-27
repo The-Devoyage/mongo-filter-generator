@@ -1,9 +1,14 @@
-import { gql } from 'apollo-server-core';
+import { gql } from "apollo-server-core";
 
 export const typeDefs = gql`
   # Scalars
   scalar DateTime
   scalar ObjectID
+  scalar JWT
+  scalar EmailAddress
+  scalar PhoneNumber
+  scalar PostalCode
+  scalar CountryCode
 
   # Filter Config
   """
@@ -11,6 +16,7 @@ export const typeDefs = gql`
   """
   input FilterConfig {
     pagination: Pagination
+    history: HistoryFilterInput
   }
   input Pagination {
     limit: Int
@@ -108,11 +114,46 @@ export const typeDefs = gql`
     NIN
   }
 
-  # Response Typings
+  enum HistoryFilterIntervalEnum {
+    YEAR
+    DAY_OF_YEAR
+    MONTH
+    DAY_OF_MONTH
+    WEEK
+    DAY_OF_WEEK
+    HOUR
+    MINUTES
+    SECONDS
+    MILLISECONDS
+  }
+
+  input HistoryFilterInput {
+    interval: [HistoryFilterIntervalEnum!]!
+  }
+
+  type HistoricStatsId {
+    YEAR: Int @shareable
+    DAY_OF_YEAR: Int @shareable
+    MONTH: Int @shareable
+    DAY_OF_MONTH: Int @shareable
+    WEEK: Int @shareable
+    DAY_OF_WEEK: Int @shareable
+    HOUR: Int @shareable
+    MINUTES: Int @shareable
+    SECONDS: Int @shareable
+    MILLISECONDS: Int @shareable
+  }
+
+  type HistoricStats {
+    _id: HistoricStatsId @shareable
+    total: Int @shareable
+  }
+
   type Stats {
-    remaining: Int
-    total: Int
-    page: Int
-    cursor: DateTime
+    remaining: Int @shareable
+    total: Int @shareable
+    page: Int @shareable
+    cursor: DateTime @shareable
+    history: [HistoricStats!] @shareable
   }
 `;

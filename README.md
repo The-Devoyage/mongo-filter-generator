@@ -2,30 +2,6 @@
 
 Find, filter, paginate with a few lines of code - The Mongo Filter Generator Library allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
 
-## Install
-
-1. Login to the github registry with your github account.
-
-```
-npm login --registry=https://npm.pkg.github.com
-```
-
-2. In the root of the target project, add the following to the `.npmrc` file:
-
-```
-@the-devoyage:registry=https://npm.pkg.github.com
-```
-
-3. Install
-
-```
-npm i @the-devoyage/mongo-filter-generator
-```
-
-## Show Some Love
-
-Using mfg or think it's a cool library? Feel free to [Show Some Love](https://basetools.io/checkout/vyOL9ATx)! Purchase grants instant github collaborator access for the life of the project.
-
 ## Main Features
 
 ### Find and Paginate Method
@@ -161,6 +137,30 @@ const response = await fetch("/api/accounts", {
     ],
   }),
 });
+```
+
+## Show Some Love
+
+Using mfg or think it's a cool library? Feel free to [Show Some Love](https://basetools.io/checkout/vyOL9ATx)! Purchase grants instant github collaborator access for the life of the project.
+
+## Install
+
+1. Login to the github registry with your github account.
+
+```
+npm login --registry=https://npm.pkg.github.com
+```
+
+2. In the root of the target project, add the following to the `.npmrc` file:
+
+```
+@the-devoyage:registry=https://npm.pkg.github.com
+```
+
+3. Install
+
+```
+npm i @the-devoyage/mongo-filter-generator
 ```
 
 ## Setup
@@ -535,6 +535,59 @@ const { filter, options } =
   };
 ```
 
+### 6. Stats and Historical Stats
+
+Stats and Historical Stats are helpful when aggregating data about a query for use within charts, graphs, and pagination. By default, a `Stats` object is included in the return of any `FindAndPaginate` call.
+
+Pass a third option, `mfgOptions`, to the `FindAndPaginate` method to enable Historical Stats. The property `stats.history` is then returned.
+
+Historical Stats allow you to get information about the query, grouped in chosen intervals. The following example request historical stats grouped by `DAY_OF_MONTH` and `MONTH`. The `stats.history` array shows how many users were created on each day of each month. You can see below that 8 users were created on May 16th, 1 user was created on April 16th, and 1 user was created on May 18th.
+
+```ts
+// Call The Function
+const users = await User.findAndPaginate<IUser>(filter, options, {
+  history: {
+    filter: {
+      interval: ["DAY_OF_MONTH", "MONTH"],
+    },
+  },
+});
+
+// Response
+{
+  stats: {
+    total: 10,
+    cursor: "2022-05-16T22:20:51.208Z",
+    page: 1,
+    remaining: 6,
+    history: [
+      {
+        _id: {
+          DAY_OF_MONTH: 16,
+          MONTH: 5
+        },
+        "total": 8
+      },
+      {
+        _id: {
+          DAY_OF_MONTH: 16,
+          MONTH: 4
+        },
+        total: 1
+      },
+      {
+        _id: {
+          DAY_OF_MONTH: 18,
+          MONTH: 5
+        },
+        total: 1
+      }
+    ]
+  },
+  data: [{...}, {...}];
+}
+```
+
 ## Reference
 
 ### Field Filters
@@ -611,8 +664,13 @@ export type Stats = {
   total: Number;
   page: Number;
   cursor: Date;
+  history: HistoricalStats[];
 };
 ```
+
+Historical Stats are a new feature in v0.4.0 that allow you to view stats about the query in groupings of time. Pass configuration to the `FindAndPaginate` method to enable historical stats.
+
+This is helpful if you are trying to aggregate data over time for charts and graphs.
 
 ### GenerateMongo
 

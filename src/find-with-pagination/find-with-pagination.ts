@@ -1,15 +1,22 @@
-import { Schema, FilterQuery } from 'mongoose';
-import { FindWithPaginationParams, PaginatedResponse } from '../types';
+import { Schema, FilterQuery } from "mongoose";
+import {
+  FindWithPaginationParams,
+  HistoryFilterInput,
+  PaginatedResponse,
+} from "../types";
+import { createHistory } from "./create-history";
 
 export function findAndPaginatePlugin(schema: Schema) {
-  schema.statics.findAndPaginate = async function(
+  schema.statics.findAndPaginate = async function (
     filter: FilterQuery<unknown>,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
+    mfgOptions?: { history: { filter: HistoryFilterInput } }
   ) {
     const paginatedResponse = await FindAndPaginate({
       filter,
       options,
       model: this,
+      mfgOptions,
     });
     return paginatedResponse;
   };
@@ -20,7 +27,7 @@ export async function FindAndPaginate<ModelType>(
 ) {
   const totalCountFilters = { ...params.filter };
 
-  if ('createdAt' in totalCountFilters) {
+  if ("createdAt" in totalCountFilters) {
     delete totalCountFilters.createdAt;
   }
 
@@ -36,7 +43,7 @@ export async function FindAndPaginate<ModelType>(
         [params.model.modelName]: [{ $limit: params.options.limit ?? 4 }],
         stats: [
           {
-            $count: 'count',
+            $count: "count",
           },
           {
             $addFields: {
@@ -44,9 +51,9 @@ export async function FindAndPaginate<ModelType>(
               remaining: {
                 $cond: {
                   if: {
-                    $gt: [{ $subtract: ['$count', params.options.limit] }, 0],
+                    $gt: [{ $subtract: ["$count", params.options.limit] }, 0],
                   },
-                  then: { $subtract: ['$count', params.options.limit] },
+                  then: { $subtract: ["$count", params.options.limit] },
                   else: 0,
                 },
               },
@@ -60,12 +67,12 @@ export async function FindAndPaginate<ModelType>(
                           $cond: {
                             if: {
                               $gt: [
-                                { $subtract: ['$count', params.options.limit] },
+                                { $subtract: ["$count", params.options.limit] },
                                 0,
                               ],
                             },
                             then: {
-                              $subtract: ['$count', params.options.limit],
+                              $subtract: ["$count", params.options.limit],
                             },
                             else: 0,
                           },
@@ -93,6 +100,11 @@ export async function FindAndPaginate<ModelType>(
     stats: documents[0].stats[0] ? documents[0].stats[0] : [],
     data: documents[0][params.model.modelName] ?? [],
   };
+
+  if (params.mfgOptions?.history?.filter) {
+    const history = await createHistory(params);
+    formatted.stats.history = history;
+  }
 
   return formatted;
 }

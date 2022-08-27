@@ -48,7 +48,7 @@ export const GenerateMongo = <DocumentType>(
       rootLocation
     );
 
-    for (let fl of filtersAndLocations) {
+    for (const fl of filtersAndLocations) {
       const fieldRule = fieldRules?.find(
         (rule) => rule.location === fl.location
       );
