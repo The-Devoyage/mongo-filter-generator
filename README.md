@@ -1,130 +1,81 @@
 # Mongo Filter Generator
 
-Find, filter, paginate with a few lines of code - The Mongo Filter Generator Library allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
+Easily add Find, filter, paginating functionality to your API with just a few lines of code.
+
+The Mongo Filter Generator Library allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
 
 ## Main Features
 
-### Find and Paginate Method
+### Generate Mongo Filters
 
-Add the find and paginate to any mongoose model to enable filtered and paginated responses. Simple setup guide is below to add this method to the model with Mongoose Plugins.
-
-```ts
-const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
-
-// Returns an object with the type PaginatedResponse - Data is stored in the data property while information about pagination is stored in `stats`.
-export interface PaginatedResponse<ModelType> {
-  stats: Stats;
-  data: ModelType[];
-}
-```
-
-### Generate Mongo
-
-Convert API request body or graphql args to mongo filters and options. The MFG library will parse nested field or array filters from the request body or graphql args -- simply pass the whole object through.
-
-**_note_** - The `fieldFilters` object should be a `Partial` shape of the model/document of which you are querying.
+Convert incoming request directly into mongoose filters.
 
 ```ts
-const { filter, options } = GenerateMongo<IUser>({
-  fieldFilters: req.body as Record<keyof IUser, unknown>,
+const { filter, options } = GenerateMongo({
+  fieldFilters: req.body,
   config: req.body.config,
 });
 
-const paginatedResponse = await User.find(filter, options);
+const resutls = await User.find(filter, options);
 ```
 
-### Standardized and Typed
+### Find and Paginate Method
 
-The Mongo Filter Generator Package provides `fieldFilter` types that you can use to standardize incoming requests. Both Typescript and GraphQL types are included.
-
-For example, the `GetDogsInput` is typed with filters provided by the library, allowing the client to have a standardized query input with extended querying capabilities throughout the entire API.
-
-GraphQL Example
+Instantly add the find and paginate method to any Mongoose model.
 
 ```ts
-//typeDefs.ts
-const typeDefs = gql`
-  type Dog {
-    _id: ObjectID!
-    age: Int!
-    breeds: [String!]!
-  }
-
-  input GetDogsInput {
-    _id: StringFieldFilter
-    age: [IntFieldFilter]
-    breeds: StringArrayFieldFilter
-  }
-
-  type GetDogsResponse {
-    stats: Stats!
-    data: [Dog!]!
-  }
-
-  type Query {
-    getDogs(getDogsInput: GetDogsInput): GetDogsResponse!
-  }
-`;
+const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
 ```
 
-While with GraphQL it is required to provide the typings to the GraphQL Server, with Typescript, it is not. Typescript users can still define their own types for incoming requests!
+Returns:
 
-```ts
-// types.d.ts
-import {
-  StringFieldFilter,
-  StringArrayFilter,
-  IntFieldFilter,
-  FilterConfig,
-} from "@the-devoyage/mongo-filter-generator";
-
-export interface GetDogsRequestBody {
-  _id?: StringFieldFilter;
-  name?: StringArrayFilter;
-  breed?: StringFieldFilter;
-  age?: IntFieldFilter;
-  favoriteFoods?: StringArrayFilter;
-  createdAt?: StringArrayFilter;
-  config?: FilterConfig;
+```
+{
+  data: [
+    {
+      _id: 1,
+      name: "Bongo",
+      age: 9,
+    },
+    {
+      _id: 2,
+      name: "Oakley",
+      age: 4,
+    },
+  ],
+  stats: {
+    remaining: 10,
+    total: 12,
+    page: 1,
+    cursor: "2022-09-03T00:45:17.245Z",
+  };
 }
 ```
 
-## Example Queries
+### Easy Queries
+
+Standardize the way that the client requests data from the API.
 
 The following query returns accounts that:
+- Have email field that contains the string "nick" 
+**AND** 
+- Has a role of either equal to 5 or less than 2.
 
-- Have email field that contains the string "nick" **AND** Have role of either equal to 5 or less than 2.
-
-GraphQL Example
+**GraphQL Example**
 
 ```js
-const GET_ACCOUNTS = gql`
-  query GetAccounts($getAccountsInput: GetAccountsInput!) {
-    getAccounts(getAccountsInput: $getAccountsInput) {
-      _id
-      email
-      role
-      activation {
-        verified
-      }
-    }
-  }
-`;
-
 const { data } = useQuery(GET_ACCOUNTS, {
   variables: {
-    getAccountsInput: {
-      email: { filterBy: "REGEX", string: "nick", operator: "AND" },
-      role: [
-        { filterBy: "EQ", int: 5, operator: "OR" },
-        { filterBy: "LT", int: 2, operator: "OR" },
-      ],
-    },
+    email: { string: "nick", filterBy: "REGEX", operator: "AND" },
+    role: [
+      { filterBy: "EQ", int: 5, operator: "OR" },
+      { filterBy: "LT", int: 2, operator: "OR" },
+    ],
   },
 });
 ```
 
-REST Example
+**REST Example**
 
 ```ts
 const response = await fetch("/api/accounts", {
@@ -139,10 +90,6 @@ const response = await fetch("/api/accounts", {
 });
 ```
 
-## Show Some Love
-
-Using mfg or think it's a cool library? Feel free to [Show Some Love](https://basetools.io/checkout/vyOL9ATx)! Purchase grants instant github collaborator access for the life of the project.
-
 ## Install
 
 1. Login to the github registry with your github account.
@@ -151,7 +98,7 @@ Using mfg or think it's a cool library? Feel free to [Show Some Love](https://ba
 npm login --registry=https://npm.pkg.github.com
 ```
 
-2. In the root of the target project, add the following to the `.npmrc` file:
+2. In the root of the target project, add the following to the `.npmrc` file to tell this package where to be downloaded from.
 
 ```
 @the-devoyage:registry=https://npm.pkg.github.com
@@ -160,16 +107,16 @@ npm login --registry=https://npm.pkg.github.com
 3. Install
 
 ```
-npm i @the-devoyage/mongo-filter-generator
+npm install @the-devoyage/mongo-filter-generator
 ```
 
 ## Setup
 
-### 1. Import Types and Resolvers
+### 1. Import Types, Resolvers, and Scalars
 
 GraphQL:
 
-First, add the MFG `typeDefs` and `resolvers` to the schema. Doing so allows you to use `FieldFilter`, `FilterConfig`, and `Stats` (along with other provided types, see reference for more) within a custom schema. It also provides the `ObjectID` and `DateTime` scalars to all of your current typeDefs.
+First, add the MFG `typeDefs` and `resolvers` to the schema.
 
 ```ts
 import { GraphQL } from "@the-devoyage/mongo-filter-generator";
@@ -184,11 +131,9 @@ ExpressJS:
 
 If you are using express, you can optionally create types for each request body. The types are provided with the package and do not need to be imported or installed separately.
 
-### 2. Add Field or Array Filters To Your Custom Schema
+### 2. Use the Typings
 
-`FieldFilters` and `ArrayFilters` allow each property of a document to be searchable by requested criteria. The Field Filter Types grant options to the client by shaping the expected request which will enter the server. Check the reference below for all provided filters, inputs, types, and scalars that can be used to shape requests.
-
-Since you added the `GraphQL` types and resolvers [step 1 above] to your schema, you do not need to re-declare them in the SDL.
+The Field Filter Types shape the expected request which will enter the server.
 
 GraphQL Example
 
@@ -200,7 +145,7 @@ import { gql } from "apollo-server-core";
 export const typeDefs = gql`
   type Account {
     _id: ObjectID!
-    createdAt: DateTime!
+    createdAt: DateTime! 
     email: String!
     role: Int!
     users: [User!]!
@@ -218,7 +163,7 @@ export const typeDefs = gql`
 
   input GetAccountsInput {
     _id: StringFieldFilter
-    users: StringArrayFieldFilter
+    users: StringFieldFilter
     email: StringFieldFilter
     role: [IntFieldFilter] # Arrays Accepted
     nested_details: NestedDetailsInput # Nested Objects are Valid
@@ -234,7 +179,7 @@ export const typeDefs = gql`
     data: [Account]
   }
 
-  extend type Query {
+  type Query {
     getAccounts(getAccountsInput: GetAccountsInput): GetAccountsResponse!
   }
 `;
@@ -247,27 +192,27 @@ With express you do not need to tell the server about every single detail. You c
 ```ts
 import {
   StringFieldFilter,
-  StringArrayFieldFilter,
+  StringFieldFilter,
   IntFieldFilter,
   FilterConfig,
 } from "@the-devoyage/mongo-filter-generator";
 
-export interface GetDogsRequestBody {
+interface RequestBody {
   _id?: StringFieldFilter;
-  name?: StringArrayFieldFilter;
+  name?: StringFieldFilter;
   breed?: StringFieldFilter;
   age?: IntFieldFilter;
-  favoriteFoods?: StringArrayFieldFilter;
-  createdAt?: StringArrayFieldFilter;
+  favoriteFoods?: StringFieldFilter;
+  createdAt?: StringFieldFilter;
   config?: FilterConfig;
 }
 ```
 
 ### 3. Generate Mongo
 
-Use the `GenerateMongo` function to convert the typed request to a mongo filter.
+Use the `GenerateMongo` function to convert the typed request to a Mongo filter.
 
-You may use the generated filters with the standard `mongooseDocument.find()` method or with the provided `mongooseDocument.findAndPaginate()` method (setup required for `findAndPaginate()`).
+The `fieldFilters` argument must be the same shape as the requested document.
 
 Graphql Example:
 
@@ -278,11 +223,11 @@ import { Account } from "models";
 
 export const Query: QueryResolvers = {
   getAccounts: async (_, args) => {
-    const { filter, options } = GenerateMongo<IAccount>({
+    const { filter, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
-    const accounts = await Account.find<IAccount>(filter, options);
+    const accounts = await Account.find(filter, options);
 
     return accounts;
   },
@@ -292,33 +237,15 @@ export const Query: QueryResolvers = {
 Express JS Example
 
 ```ts
-import {
-  StringFieldFilter,
-  StringArrayFieldFilter,
-  IntFieldFilter,
-  FilterConfig,
-} from "@the-devoyage/mongo-filter-generator";
-
-export interface GetDogsRequestBody {
-  _id?: StringFieldFilter;
-  name?: StringArrayFieldFilter;
-  breed?: StringFieldFilter;
-  age?: IntFieldFilter;
-  favoriteFoods?: StringArrayFieldFilter;
-  createdAt?: StringArrayFieldFilter;
-  config?: FilterConfig;
-}
-
 app.get("/", (req, res) => {
   const request: GetDogsRequestBody = req.body;
 
-  const { filter, options } = GenerateMongo<IDog>({
+  const { filter, options } = GenerateMongo({
     fieldFilters: request,
     config: request.config,
   });
 
-  // Use filters to find the requested documents
-  const dogs = await Dog.find<IDog>(filter);
+  const dogs = await Dog.find(filter);
 
   res.json(dogs);
 });
@@ -326,13 +253,13 @@ app.get("/", (req, res) => {
 
 ### 4. Find and Paginate
 
-Use the generated `filter` and `options`, from the `GenerateMongo` method, with the provided find and paginate function.
+Use the generated `filter` and `options` properties, from the `GenerateMongo` method, with the provided find and paginate function.
 
 ```ts
-import { GenerateMongo } from "@the-devoyage/mongo-filter-generator";
+import { GenerateMongo, FindAndPaginate } from "@the-devoyage/mongo-filter-generator";
 import { Account } from "models";
 
-export const Query: QueryResolvers = {
+const Query = {
   getAccounts: async (_, args) => {
     const { filter, options } = GenerateMongo<IAccount>({
       fieldFilters: args.getAllUsersInput,
@@ -349,7 +276,7 @@ export const Query: QueryResolvers = {
 };
 ```
 
-or
+**or**
 
 **Note - You must Enable the `findAndPaginate()` method with Mongoose Plugins for the following to execute. Instructions below.**
 
@@ -357,9 +284,9 @@ or
 import { GenerateMongo } from "@the-devoyage/mongo-filter-generator";
 import { Account } from "models";
 
-export const Query: QueryResolvers = {
+export const Query = {
   getAccounts: async (_, args) => {
-    const { filter, options } = GenerateMongo<IAccount>({
+    const { filter, options } = GenerateMongo({
       fieldFilters: args.getAllUsersInput,
     });
 
@@ -373,12 +300,12 @@ export const Query: QueryResolvers = {
 };
 ```
 
-To apply the `findAndPaginate()` method to models, as the above example, you must apply the provided mongoose plugin. This may be done within the server file for global plugin, or within the model definition file, for a one time use.
+#### 4.1. Install `findAndPaginate`
 
-Note - If this is done within the server/entry point, the plugin must be defined BEFORE routes/resolvers and model imports. Read the Mongoose Global Plugins Documentation for more details.
+To apply the `findAndPaginate()` method to models, as the above example demonstrates, you must provide the provided mongoose plugin. 
 
 ```ts
-// entry-point.ts
+// entry-point.ts -- The entry point to the entire server.
 import mongoose from "mongoose";
 import { findAndPaginatePlugin } from "@the-devoyage/mongo-filter-generator";
 mongoose.plugin(findAndPaginatePlugin);
@@ -410,10 +337,15 @@ export const User = mongoose.model<IUser, FindAndPaginateModel>(
 );
 ```
 
-### 5. Groups
+## Advanced Features
 
-Groups are included as a base part of all filters and allow you to query multiple properties within and/or groupings when constructing the request.
-There is no additional setup to use grouped filters. All group names must end with `.and` or `.or` in order to specify the functionality of the group.
+### 1. Groups
+
+Groups allow a more selective `and/or` filtering between selections of multiple properties within the document. 
+
+For example, you might want to find a user that has `age of less than 30 and name that is "luna"` or `age of greater than 20 and name is "johnny"`.
+
+#### Example
 
 Let's query for users as an example.
 
@@ -428,7 +360,9 @@ type User {
 }
 ```
 
-1. Construct a query with groups. This query will find users who have a favorite food of pizza or wings AND have a name that contains (regex) jim or john.
+This query will find users who have a `favorite food of pizza or wings` AND `has a name that contains jim or john`.
+
+Group names must end with `.and` or `.or` to determine the function of the nested group.
 
 ```json
 {
@@ -467,57 +401,26 @@ type User {
 }
 ```
 
-2. The Generate Mongo Function will return filters that group the properties together by group name and and/or condition. In case you want to see what it looks like:
+### 2. Field Rules
 
-```json
-{
-  "$or": [
-    {
-      "$or": [
-        {
-          "name": {}
-        },
-        {
-          "name": {}
-        }
-      ]
-    }
-  ],
-  "$and": [
-    {
-      "$or": [
-        {
-          "favFoods": {
-            "$in": [{}]
-          }
-        },
-        {
-          "favFoods": {
-            "$in": [{}]
-          }
-        }
-      ]
-    }
-  ]
-}
-```
+Field Rules can be applied to `GenerateMongo` arguments in order to perform a variety of actions when creating filters, and enforcing finding patterns.
 
-### 6. Field Rules
-
-Server side, Field Rules can be applied to `GenerateMongo` arguments in order to perform a variety of actions when creating filters.
+Properties:
+- "location" - A string containing the location of the rule. For example, `user.name.first`
+- "fieldFilter" - A "Field Filter" that matches the type within the database.
+- "action" - The performed rule, see below.
 
 Actions:
 
 - "INITIAL" - Provide a default field filter for every operation. Client request may overwrite the filter with their own request.
-- "DISABLE" - Revoke client permission to query certain fields. If the client request includes field filters for the disabled field, an error will be thrown.
-- "COMBINE" - Combine the field filter provided within the field rule with the client's field filter.
+- "DISABLE" - Revoke client permission to query certain fields.
+- "COMBINE" - Combine the field filter provided within the field rule with the field filter provided by the client.
 - "OVERRIDE" - A default value that can not be overridden. An error is thrown if a client tries to request filtering with this field.
 
 ```ts
 const { filter, options } =
   GenerateMongo <
-  IUser >
-  {
+  IUser >({
     fieldFilters: args.getAllUsersInput,
     config: args.getAllUsersInput.config,
     fieldRules: [
@@ -532,16 +435,80 @@ const { filter, options } =
         action: "COMBINE",
       },
     ],
-  };
+  });
 ```
 
-### 6. Stats and Historical Stats
+### 3. Stats
 
-Stats and Historical Stats are helpful when aggregating data about a query for use within charts, graphs, and pagination. By default, a `Stats` object is included in the return of any `FindAndPaginate` call.
+Stats allow you to see simple data about the query. All results from the provided `FindAndPaginate` methods return `Stats`.
 
-Pass a third option, `mfgOptions`, to the `FindAndPaginate` method to enable Historical Stats. The property `stats.history` is then returned.
+```ts
+type Stats = {
+  remaining: Number;
+  total: Number;
+  page: Number;
+  cursor: Date;
+  history: HistoricalStats[];
+};
+```
 
-Historical Stats allow you to get information about the query, grouped in chosen intervals. The following example request historical stats grouped by `DAY_OF_MONTH` and `MONTH`. The `stats.history` array shows how many users were created on each day of each month. You can see below that 8 users were created on May 16th, 1 user was created on April 16th, and 1 user was created on May 18th.
+GraphQL
+
+1. Add Stats to your Schema Response
+
+```ts
+import { gql } from "apollo-server-core";
+
+export const typeDefs = gql`
+  type Dog {
+    _id: ObjectID!
+    createdAt: DateTime! 
+    name: String!
+  }
+
+  input GetAccountsInput {
+    _id: StringFieldFilter
+    ...
+  }
+
+  type GetAccountsResponse {
+    stats: Stats
+    data: [Dog]
+  }
+
+  type Query {
+    getAccounts(getAccountsInput: GetAccountsInput): GetAccountsResponse!
+  }
+`;
+```
+
+Express
+
+No action needed!
+
+2. The Find and Paginate methods return `Stats`
+
+```ts
+const { data, stats } = await FindAndPaginate<IAccount>({
+  filter,
+  options,
+  model: Account,
+});
+```
+
+### 4. Historical Stats
+
+Historical Stats are helpful when aggregating data about a query for use within charts, graphs, and pagination. 
+
+Pass a third option to the `FindAndPaginate` method to enable Historical Stats. The property `stats.history` is then returned.
+
+Historical Stats allow you to get information about the query, grouped in chosen intervals. 
+
+The following example request historical stats grouped by `DAY_OF_MONTH` and `MONTH`. 
+
+The `stats.history` array shows how many users were created on each day of each month. 
+
+You can see below that 8 users were created on May 16th, 1 user was created on April 16th, and 1 user was created on May 18th.
 
 ```ts
 // Call The Function
@@ -584,7 +551,6 @@ const users = await User.findAndPaginate<IUser>(filter, options, {
       }
     ]
   },
-  data: [{...}, {...}];
 }
 ```
 
@@ -645,7 +611,7 @@ type StringArrayFieldFilter = {
 Used to type a configuration property of a request, to allow the client to control pagination. Can then be passed to the `GenerateMongo` method to convert it to Mongoose `QueryOptions`.
 
 ```ts
-export type FilterConfig = {
+type FilterConfig = {
   pagination?: {
     limit?: number;
     reverse?: boolean;
@@ -659,7 +625,7 @@ export type FilterConfig = {
 The `stats` object is returned from the `FindAndPaginate` function or the `model.findAndPaginate()` method. Send this back to the client as a response.
 
 ```ts
-export type Stats = {
+type Stats = {
   remaining: Number;
   total: Number;
   page: Number;
@@ -668,9 +634,26 @@ export type Stats = {
 };
 ```
 
-Historical Stats are a new feature in v0.4.0 that allow you to view stats about the query in groupings of time. Pass configuration to the `FindAndPaginate` method to enable historical stats.
+### Historical Stats
 
-This is helpful if you are trying to aggregate data over time for charts and graphs.
+```
+type HistoricStats = {
+  total: number;
+  _id: Record<HistoryFilterIntervalEnum, number>;
+};
+
+type HistoryFilterIntervalEnum =
+  | "YEAR"
+  | "DAY_OF_YEAR"
+  | "MONTH"
+  | "DAY_OF_MONTH"
+  | "WEEK"
+  | "DAY_OF_WEEK"
+  | "HOUR"
+  | "MINUTES"
+  | "SECONDS"
+  | "MILLISECONDS";
+```
 
 ### GenerateMongo
 
