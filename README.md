@@ -129,7 +129,7 @@ const schema = buildFederatedSchema([
 
 ExpressJS:
 
-If you are using express, you can optionally create types for each request body. The types are provided with the package and do not need to be imported or installed separately.
+No action needed to initiate filters.
 
 ### 2. Use the Typings
 
