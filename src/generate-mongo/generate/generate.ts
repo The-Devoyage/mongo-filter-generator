@@ -1,20 +1,55 @@
-import { Validate } from '../validate';
 import { FilterQuery, isValidObjectId } from 'mongoose';
 import { GenerateFilterArguments } from '../../types';
 import mongoose from 'mongoose';
+import {
+  StringFieldFilterSchema,
+  BooleanFieldFilterSchema,
+  IntFieldFilterSchema,
+  StringArrayFieldFilterSchema,
+  DateFieldFilterSchema,
+  DateFieldFilter,
+  IntFieldFilter,
+  BooleanFieldFilter,
+  StringFieldFilter,
+  StringArrayFieldFilter
+} from "@the-devoyage/request-filter-language"
 
 export const filterQuery = (
   params: GenerateFilterArguments
 ): FilterQuery<unknown> | undefined => {
-  let { fieldFilter } = params;
+  const { fieldFilter } = params;
 
   // Convert to Mongo Filters
-  if (Validate.isStringFieldFilter(fieldFilter)) {
-    switch (fieldFilter.filterBy) {
+  if (StringFieldFilterSchema.safeParse(fieldFilter).success) {
+    switch (fieldFilter?.filterBy) {
+      case 'REGEX': {
+        let search: RegExp | RegExp[] = [];
+        search = new RegExp(`${(fieldFilter as StringFieldFilter).string}`, 'i');
+        return search;
+      }
+      case 'MATCH': {
+        return (fieldFilter as StringFieldFilter).string as FilterQuery<string>;
+      }
+
+      case 'OBJECTID': {
+        let search: mongoose.Types.ObjectId | mongoose.Types.ObjectId[] = [];
+
+        const isValidID = isValidObjectId((fieldFilter as StringFieldFilter).string);
+        if (!isValidID) {
+          throw new Error(`Invalid Mongo Object ID: ${(fieldFilter as StringFieldFilter).string}.`);
+        }
+        const _id = new mongoose.Types.ObjectId((fieldFilter as StringFieldFilter).string as string);
+        search = _id;
+
+        return search;
+      }
+    }
+  } else if (StringArrayFieldFilterSchema.safeParse(fieldFilter).success) {
+    switch (fieldFilter?.filterBy) {
       case 'REGEX': {
         let search: RegExp | RegExp[] = [];
         if ('arrayOptions' in fieldFilter) {
-          for (const str of fieldFilter.string as string[]) {
+          for (const str of fieldFilter.strings as string[]) {
             const regex = new RegExp(`${str}`, 'i');
             search.push(regex);
           }
@@ -24,14 +59,14 @@ export const filterQuery = (
         return search;
       }
       case 'MATCH': {
-        return fieldFilter.string as FilterQuery<string>;
+        return (fieldFilter as StringArrayFieldFilter).strings;
       }
 
       case 'OBJECTID': {
         let search: mongoose.Types.ObjectId | mongoose.Types.ObjectId[] = [];
 
         if ('arrayOptions' in fieldFilter) {
-          for (const str of fieldFilter.string as string[]) {
+          for (const str of fieldFilter.strings) {
             const isValidID = isValidObjectId(str);
             if (!isValidID) {
               throw new Error(`Invalid Mongo Object ID: ${str}.`);
@@ -51,86 +86,83 @@ export const filterQuery = (
         return search;
       }
     }
-  } else if (Validate.isBooleanFieldFilter(fieldFilter)) {
-    switch (fieldFilter.filterBy) {
+
+  } else if (BooleanFieldFilterSchema.safeParse(fieldFilter).success) {
+    switch (fieldFilter?.filterBy) {
       case 'EQ': {
         return {
-          $eq: fieldFilter.bool,
+          $eq: (fieldFilter as BooleanFieldFilter).bool,
         };
       }
       case 'NE': {
         return {
-          $ne: fieldFilter.bool,
+          $ne: (fieldFilter as BooleanFieldFilter).bool,
         };
       }
     }
-  } else if (Validate.isIntFieldFilter(fieldFilter)) {
-    switch (fieldFilter.filterBy) {
+  } else if (IntFieldFilterSchema.safeParse(fieldFilter).success) {
+    switch ((fieldFilter as IntFieldFilter).filterBy) {
       case 'LT': {
         return {
-          $lt: fieldFilter.int,
+          $lt: (fieldFilter as IntFieldFilter).int,
         };
       }
       case 'GT': {
         return {
-          $gt: fieldFilter.int,
+          $gt: (fieldFilter as IntFieldFilter).int,
         };
       }
       case 'EQ': {
         return {
-          $eq: fieldFilter.int,
+          $eq: (fieldFilter as IntFieldFilter).int,
         };
       }
       case 'LTE': {
         return {
-          $lte: fieldFilter.int,
+          $lte: (fieldFilter as IntFieldFilter).int,
         };
       }
       case 'GTE': {
         return {
-          $gte: fieldFilter.int,
+          $gte: (fieldFilter as IntFieldFilter).int,
         };
       }
       case 'NE': {
         return {
-          $ne: fieldFilter.int,
+          $ne: (fieldFilter as IntFieldFilter).int,
         };
       }
     }
-  } else if (Validate.isDateFieldFilter(fieldFilter)) {
-    switch (fieldFilter.filterBy) {
+  } else if (DateFieldFilterSchema.safeParse(fieldFilter).success) {
+    const date = new Date((fieldFilter as DateFieldFilter).date);
+
+    switch (fieldFilter?.filterBy) {
       case 'LTE': {
-        const date = new Date(fieldFilter.date);
         return {
           $lte: date,
         };
       }
       case 'GTE': {
-        const date = new Date(fieldFilter.date);
         return {
           $gte: date,
         };
       }
       case 'NE': {
-        const date = new Date(fieldFilter.date);
         return {
           $ne: date,
         };
       }
       case 'EQ': {
-        const date = new Date(fieldFilter.date);
         return {
           $eq: date,
         };
       }
       case 'GT': {
-        const date = new Date(fieldFilter.date);
         return {
           $gt: date,
         };
       }
       case 'LT': {
-        const date = new Date(fieldFilter.date);
         return {
           $lt: date,
         };
@@ -139,5 +171,6 @@ export const filterQuery = (
   } else {
     return;
   }
+  return undefined
 };
 

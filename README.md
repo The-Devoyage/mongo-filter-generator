@@ -1,14 +1,6 @@
 # Mongo Filter Generator
 
-Easily add Find, filter, paginating functionality to your API with just a few lines of code.
-
-The Mongo Filter Generator Library allows the client to request filtered and paginated documents from a REST or GraphQL API that uses Mongoose to query a MongoDB instance.
-
-## Main Features
-
-### Generate Mongo Filters
-
-Convert incoming request directly into mongoose filters.
+Easily add Find, filter, paginating functionality to API routes/resolvers with just a few lines of code.
 
 ```ts
 const { filter, options } = GenerateMongo({
@@ -19,9 +11,76 @@ const { filter, options } = GenerateMongo({
 const resutls = await User.find(filter, options);
 ```
 
+## Features
+
+### Generate Mongo Filters
+
+Convert network requests shaped with `@the-devoyage/request-filter-language` directly into mongoose filters.
+
+```js
+const getDogs = (req, res) => {
+  const { filter } = GenerateMongo(req.body);
+  const dogs = await Dogs.find(filter); // Mongoose Model!
+  res.json(dogs);
+};
+```
+
+### Advanced Filtering
+
+Specify **nested** and/or queries, **grouped** queries, and standardized filtering options for strings, numbers, booleans, and dates. Advanced filtering for the client without the headache.
+
+- Or Clauses - Find users who have a `first name = Bongo -or- age = 10`.
+
+```
+const users = getUsers({
+  name: new fieldFilter().string("Bongo").operator("OR").run(),
+  age: new fieldFilter().int(10).filterBy("EQ").run(),
+});
+```
+
+- And Clauses - Find users who have a `first name = Bongo -or- age = 25` - or - `petName = "Oakley"`.
+
+```
+const users = getUsers({
+  name: new fieldFilter().string("Bongo")
+    .operator("OR")
+    .run(),
+  age: new fieldFilter().int(25)
+    .filterBy("EQ")
+    .run(),
+  petName: new fieldFilter().string("Oakley")
+    .run(),
+});
+```
+
+- Custom Groupings - Find users who have a `first name = Bongo -or- age = 25` - or - `petName = "Oakley" -and- petAge < 11`.
+
+```
+const users = getUsers({
+  name: new fieldFilter().string("Bongo")
+    .operator("OR")
+    .groups(["user.or"])
+    .run(),
+  age: new fieldFilter().int(25)
+    .operator("OR")
+    .filterBy("EQ")
+    .groups(["user.or"])
+    .run(),
+  petName: new fieldFilter().string("Oakley")
+    .operator("OR")
+    .groups(["pet.and"])
+    .run(),
+  petAge: new fieldFilter()
+    .int(11)
+    .operator("LT")
+    .groups(["pet.and"])
+    .run(),
+});
+```
+
 ### Find and Paginate Method
 
-Instantly add the find and paginate method to any Mongoose model.
+Add the find and paginate method to any Mongoose model to easily access advanced filtering, statistical data, and pagination.
 
 ```ts
 const paginatedResponse = await User.findAndPaginate<IUser>(filter, options);
@@ -54,7 +113,7 @@ Returns:
 
 ### Easy Queries
 
-Standardize the way that the client requests data from the API.
+Standardize the way that the client requests data from the API and easily write queries with the library `@the-devoyage/request-filter-language`.
 
 The following query returns accounts that:
 - Have email field that contains the string "nick" 
@@ -63,19 +122,25 @@ The following query returns accounts that:
 
 **GraphQL Example**
 
+Field Filters written with `@the-devoyage/request-filter-langauge`.
+
 ```js
+import { fieldFilter } from "@the-devoyage/request-filter-language";
+
 const { data } = useQuery(GET_ACCOUNTS, {
   variables: {
-    email: { string: "nick", filterBy: "REGEX", operator: "AND" },
+    email: new fieldFilter().string("Bongo").operator("AND").filterBy("REGEX").run(),
     role: [
-      { filterBy: "EQ", int: 5, operator: "OR" },
-      { filterBy: "LT", int: 2, operator: "OR" },
+      new FieldFilter().int(2).filterBy("EQ").operator("OR").run(),
+      new FieldFilter().int(5).filterBy("LT").operator("OR").run()
     ],
   },
 });
 ```
 
 **REST Example**
+
+Field Filters written out in object form.
 
 ```ts
 const response = await fetch("/api/accounts", {
@@ -88,6 +153,106 @@ const response = await fetch("/api/accounts", {
     ],
   }),
 });
+```
+
+### Statistical Data
+
+Returns basic statistical data such as total counts, cursors, remaining counts, and current page. 
+
+In addition it returns optional historical stats, which is data that is organized into time periods so that you can easily create charts and graphs based on specified date objects.
+
+```js
+{
+  "data": {
+    "getDogs": {
+      "stats": {
+        "total": 126,
+        "cursor": "2022-05-04T15:45:22.000Z",
+        "remaining": 121,
+        "page": 1,
+        "history": [
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 1
+            },
+            "total": 14
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 2
+            },
+            "total": 18
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 3
+            },
+            "total": 7
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 4
+            },
+            "total": 1
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 5
+            },
+            "total": 10
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 6
+            },
+            "total": 12
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 7
+            },
+            "total": 48
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 9
+            },
+            "total": 8
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 10
+            },
+            "total": 5
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 11
+            },
+            "total": 1
+          },
+          {
+            "_id": {
+              "YEAR": 2022,
+              "MONTH": 12
+            },
+            "total": 2
+          }
+        ]
+      }
+    }
+  }
+}
 ```
 
 ## Install
@@ -116,15 +281,15 @@ npm install @the-devoyage/mongo-filter-generator
 
 GraphQL:
 
-First, add the MFG `typeDefs` and `resolvers` to the schema.
+First, add the MFG `typeDefs` and `resolvers` to the schema from the `@the-devoyage/request-filter-language` library.
 
 ```ts
-import { GraphQL } from "@the-devoyage/mongo-filter-generator";
+import { GraphQL } from "@the-devoyage/request-filter-language";
 
-const schema = buildFederatedSchema([
-  { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
-  // ...other typeDefs and Resolvers
-]);
+const server = new ApolloServer({
+  typeDefs: [typeDefs, GraphQL.typeDefs],
+  resolvers: [resolvers, GraphQL.resolvers],
+});
 ```
 
 ExpressJS:
@@ -192,10 +357,9 @@ With express you do not need to tell the server about every single detail. You c
 ```ts
 import {
   StringFieldFilter,
-  StringFieldFilter,
   IntFieldFilter,
   FilterConfig,
-} from "@the-devoyage/mongo-filter-generator";
+} from "@the-devoyage/request-filter-language";
 
 interface RequestBody {
   _id?: StringFieldFilter;
@@ -287,7 +451,7 @@ import { Account } from "models";
 export const Query = {
   getAccounts: async (_, args) => {
     const { filter, options } = GenerateMongo({
-      fieldFilters: args.getAllUsersInput,
+      fieldFilters: args.getAccountsInput,
     });
 
     const paginatedAccounts = await Account.findAndPaginate<IAccount>(
@@ -554,7 +718,7 @@ const users = await User.findAndPaginate<IUser>(filter, options, {
 }
 ```
 
-## Reference
+## API
 
 ### Field Filters
 
@@ -695,22 +859,6 @@ const schema = buildFederatedSchema([
   { typeDefs: GraphQL.typeDefs, resolvers: GraphQL.resolvers },
 ]);
 ```
-
-### Parse
-
-A collection of helpers to parse data.
-
-- `Parse.parseFieldFilter` - Find field filters within an object starting from a specified location.
-
-### Validate
-
-A collection of helpers to validate field filters and other MFG objects.
-
-- `Validate.isFieldFilter`
-- `Validate.isStringFieldFilter`
-- `Validate.isBooleanFieldFilter`
-- `Validate.isIntFieldFilter`
-- `Validate.isDateFieldFilter`
 
 ### Modify
 

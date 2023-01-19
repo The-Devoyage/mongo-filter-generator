@@ -1,13 +1,13 @@
 import { Schema, FilterQuery } from "mongoose";
 import {
   FindWithPaginationParams,
-  HistoryFilterInput,
   PaginatedResponse,
 } from "../types";
 import { createHistory } from "./create-history";
+import { HistoryFilterInput } from "@the-devoyage/request-filter-language";
 
 export function findAndPaginatePlugin(schema: Schema) {
-  schema.statics.findAndPaginate = async function (
+  schema.statics.findAndPaginate = async function(
     filter: FilterQuery<unknown>,
     options: Record<string, unknown>,
     mfgOptions?: { history: { filter: HistoryFilterInput } }
