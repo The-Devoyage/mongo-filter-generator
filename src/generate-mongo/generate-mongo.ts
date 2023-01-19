@@ -1,8 +1,8 @@
 import { Generate } from "./generate";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { GenerateMongoArguments } from "../types";
-import { Parse } from "./parse";
 import { Modify } from "./modify";
+import { parseFieldFilters } from "@the-devoyage/request-filter-language";
 
 /**
  * Uses Field Filters and Field Config to generate Mongoose Filters and Options.
@@ -24,12 +24,11 @@ export const GenerateMongo = <DocumentType>(
 
   // Handle Pagination
   if (config?.pagination) {
-    if (config.pagination.createdAt) {
-      filter["createdAt"] = {
-        [config.pagination.reverse ? "$lt" : "$gt"]: new Date(
-          config.pagination.createdAt
-        ),
-      };
+    const dateKey = config.pagination.date_key ?? "createdAt"
+    filter[dateKey as keyof FilterQuery<DocumentType>] = {
+      [config.pagination.reverse ? "$lt" : "$gt"]: new Date(
+        config.pagination.date_cursor ?? ""
+      ),
     }
     if ("reverse" in config.pagination) {
       options.sort = {
@@ -43,10 +42,7 @@ export const GenerateMongo = <DocumentType>(
 
   // Generate Filters for Arrays of Filters and Single Filters
   for (const rootLocation in fieldFilters) {
-    const filtersAndLocations = Parse.parseFieldFilters(
-      fieldFilters[rootLocation] as Record<string, unknown>,
-      rootLocation
-    );
+    const filtersAndLocations = parseFieldFilters(fieldFilters[rootLocation], rootLocation)
 
     for (const fl of filtersAndLocations) {
       const fieldRule = fieldRules?.find(

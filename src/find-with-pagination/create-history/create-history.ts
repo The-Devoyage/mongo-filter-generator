@@ -1,4 +1,5 @@
-import { FindWithPaginationParams, HistoryFilterIntervalEnum } from "src/types";
+import { FindWithPaginationParams } from "src/types";
+import { HistoryFilterIntervalEnum } from '@the-devoyage/request-filter-language'
 
 function toCamelCase(string: string) {
   const STR = string

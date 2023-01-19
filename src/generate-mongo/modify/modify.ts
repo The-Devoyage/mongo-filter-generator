@@ -1,9 +1,9 @@
 import {
   AddFilterArguments,
-  FieldFilter as IFieldFilter,
   FieldRule,
 } from "../../types";
 import { FilterQuery } from "mongoose";
+import { FieldFilter as IFieldFilter } from "@the-devoyage/request-filter-language";
 
 const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
   const { filter, location, newFilter, operator, arrayOptions, groups } =
@@ -16,8 +16,8 @@ const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
         const operatorType = group.includes(".or")
           ? "$or"
           : group.includes(".and")
-          ? "$and"
-          : null;
+            ? "$and"
+            : null;
 
         if (!operatorType) {
           throw Error(
@@ -67,8 +67,8 @@ const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
         const operatorType = group.includes(".or")
           ? "$or"
           : group.includes(".and")
-          ? "$and"
-          : null;
+            ? "$and"
+            : null;
 
         if (!operatorType) {
           throw Error(
@@ -189,7 +189,6 @@ const applyFieldRule = (
       break;
 
     case "OVERRIDE":
-
     default:
       if (fieldFilter) {
         throw new Error(
@@ -254,7 +253,7 @@ export const transformGroups = (
                   });
 
                   if (index > -1) {
-                    for (let filter of transformedGroupAndOr) {
+                    for (const filter of transformedGroupAndOr) {
                       if (
                         Object.keys(filter)[0] ===
                         splitLocation[splitLocation.length - 1]
@@ -263,7 +262,7 @@ export const transformGroups = (
 
                         const incomingFilter = newFilter;
 
-                        const isObject = (item: any) => {
+                        const isObject = (item: unknown) => {
                           return (
                             item &&
                             typeof item === "object" &&
@@ -295,7 +294,7 @@ export const transformGroups = (
                                   ]["$and"]) {
                                     if (
                                       !filter[Object.keys(filter)[0]][
-                                        "$elemMatch"
+                                      "$elemMatch"
                                       ]
                                     ) {
                                       combinedFilters.push(filter);
