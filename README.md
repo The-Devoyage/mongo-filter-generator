@@ -11,6 +11,10 @@ const { filter, options } = GenerateMongo({
 const resutls = await User.find(filter, options);
 ```
 
+### Request Filter Language
+
+To make things easy, this library uses a shared type library, `@the-devoyage/request-filter-language@0.0.3`. You can use this library for validation, type inference, and graphql type defs in your projects.
+
 ## Features
 
 ### Generate Mongo Filters
