@@ -4,6 +4,10 @@
 
 ### Added
 - Type and Validation Support from the library `@the-devoyage/request-filter-language`
+- Added logging for better debugging.
+- Added default cases for filter query generation. Defaults to `MATCH` or `EQ` if `filterBy` property is not provided.
+- Default operator options changed to `AND`
+- Added `per_page` and `prev_cursor` to `Stats`.
 
 ### Removed
 - GraphQL Types - You may now get the GraphQL Schema from `@the-devoyage/request-filter-language`.

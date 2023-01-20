@@ -1,8 +1,14 @@
 import { Model, FilterQuery, ObjectId, QueryOptions } from "mongoose";
-import { Stats, ArrayFilterByOptions, OperatorOptions, HistoryFilterInput, FieldFilter, FilterConfig } from "@the-devoyage/request-filter-language";
+import {
+  Stats,
+  ArrayFilterByOptions,
+  OperatorOptions,
+  HistoryFilterInput,
+  FieldFilter,
+  FilterConfig,
+} from "@the-devoyage/request-filter-language";
 
 export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
 export type Scalars = {
   ID: string;
   String: string;
@@ -21,7 +27,7 @@ export interface FieldRule {
 
 export interface GenerateMongoArguments<DocumentType> {
   fieldFilters: Partial<Record<keyof DocumentType, object | null>>;
-  config?: FilterConfig | InputMaybe<FilterConfig>;
+  config?: FilterConfig;
   fieldRules?: FieldRule[];
 }
 

@@ -1,14 +1,17 @@
-import {
-  AddFilterArguments,
-  FieldRule,
-} from "../../types";
+import { AddFilterArguments, FieldRule } from "../../types";
 import { FilterQuery } from "mongoose";
 import { FieldFilter as IFieldFilter } from "@the-devoyage/request-filter-language";
 
 const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
-  const { filter, location, newFilter, operator, arrayOptions, groups } =
-    params;
-  const parsedOperator = `$${operator ? operator.toLowerCase() : "or"}`;
+  const {
+    filter,
+    location,
+    newFilter,
+    operator,
+    arrayOptions,
+    groups,
+  } = params;
+  const parsedOperator = `$${operator ? operator.toLowerCase() : "and"}`;
 
   if (!arrayOptions) {
     if (groups) {
@@ -16,8 +19,8 @@ const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
         const operatorType = group.includes(".or")
           ? "$or"
           : group.includes(".and")
-            ? "$and"
-            : null;
+          ? "$and"
+          : null;
 
         if (!operatorType) {
           throw Error(
@@ -67,8 +70,8 @@ const addFilter = (params: AddFilterArguments): FilterQuery<unknown> => {
         const operatorType = group.includes(".or")
           ? "$or"
           : group.includes(".and")
-            ? "$and"
-            : null;
+          ? "$and"
+          : null;
 
         if (!operatorType) {
           throw Error(
@@ -278,8 +281,10 @@ export const transformGroups = (
                             for (const root in incoming) {
                               if (isObject(incoming[root])) {
                                 if (incoming[root]["$elemMatch"]["$and"]) {
-                                  const combinedFilters: Record<string, any>[] =
-                                    [];
+                                  const combinedFilters: Record<
+                                    string,
+                                    any
+                                  >[] = [];
 
                                   if (existing[root]["$elemMatch"]["$and"]) {
                                     for (const filter of existing[root][
@@ -294,7 +299,7 @@ export const transformGroups = (
                                   ]["$and"]) {
                                     if (
                                       !filter[Object.keys(filter)[0]][
-                                      "$elemMatch"
+                                        "$elemMatch"
                                       ]
                                     ) {
                                       combinedFilters.push(filter);
