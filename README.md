@@ -874,3 +874,4 @@ A collection of helpers to modify objects associated with MFG.
 ### Generate
 
 - `Generate.filterQuery` - Converts any field filter to a Mongo Query Filter. Applies additional rules if applicable.
+
